@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 type ConfigValueMap = HashMap<String, Option<String>>;
 
+/// Returns the full path to the config.properties file.
 pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
     let home_path_res = env::var("MAGICINFO_PREMIUM_HOME");
     if let Err(e) = home_path_res {
@@ -29,6 +30,7 @@ pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
     Ok(config_properties_path)
 }
 
+/// Searches in the config.properties file for the requested properties.
 pub fn get_config_properties(properties: &[&str]) -> Result<ConfigValueMap, SimpleError> {
     let config_properties_path = get_config_properties_path()?;
     let config_properties = File::open(config_properties_path).unwrap();

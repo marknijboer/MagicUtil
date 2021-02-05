@@ -7,6 +7,8 @@ const LOG_PROPERTY: &str = "log4j.appender.file.File";
 
 pub use prop::get_config_properties_path;
 
+/// Returns the configuration values in the order in which the properties are
+/// requested
 pub fn handle_config_command(submatches: &ArgMatches) {
     let properties: Vec<&str> = submatches.values_of("PROPERTY").unwrap().collect();
     if properties.is_empty() {
@@ -29,6 +31,7 @@ pub fn handle_config_command(submatches: &ArgMatches) {
     return;
 }
 
+/// Returns the log directory path
 pub fn get_log_directory() -> PathBuf {
     let property_values_res = prop::get_config_properties(&[LOG_PROPERTY]);
     if let Err(e) = property_values_res {

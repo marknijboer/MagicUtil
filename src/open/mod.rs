@@ -11,6 +11,7 @@ enum LogAction {
     Tail,
 }
 
+/// Handles all file related commands that requires opening files
 pub fn handle_open_command(submatches: &ArgMatches) {
     let file: &str = submatches.value_of("FILE").unwrap();
     if file == "config" {
@@ -26,6 +27,7 @@ pub fn handle_open_command(submatches: &ArgMatches) {
     exit(1);
 }
 
+/// Handles all file related commands that requires tailing and following files.
 pub fn handle_tail_command(submatches: &ArgMatches) {
     let file: &str = submatches.value_of("FILE").unwrap();
     if logfile(LogAction::Tail, file) {
@@ -36,6 +38,8 @@ pub fn handle_tail_command(submatches: &ArgMatches) {
     exit(1);
 }
 
+/// Searches the file in the log directory. If found, it will execute the
+/// requested action.
 fn logfile(action: LogAction, file: &str) -> bool {
     let mut log_path = get_log_directory();
     log_path = log_path.join(file);
@@ -55,6 +59,7 @@ fn logfile(action: LogAction, file: &str) -> bool {
     return true;
 }
 
+/// Opens the config file in the editor
 fn open_config_properties() {
     let config_path_res = get_config_properties_path();
     if let Err(e) = config_path_res {
@@ -68,6 +73,7 @@ fn open_config_properties() {
     open_file(config_path);
 }
 
+/// Opens the given file in the editor
 fn open_file(file: &str) {
     let mut command = Command::new("C:\\Program Files\\Notepad++\\notepad++.exe");
     command.args(&[file]);
@@ -82,6 +88,7 @@ fn open_file(file: &str) {
     println!("Opened file with Notepad++... ({})", handle.id())
 }
 
+/// Tails the given file and follows the output
 fn tail_file(file: &str) {
     let file_str = format!("\"{}\"", file);
 
