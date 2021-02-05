@@ -1,7 +1,9 @@
 mod system;
 mod config;
+mod service;
 mod cli;
 mod open;
+mod info;
 
 fn main() {
     // System subcommand
@@ -23,6 +25,16 @@ fn main() {
     // Tail subcommand
     if let Some(submatches) = matches.subcommand_matches("tail") {
         return open::handle_tail_command(submatches);
+    }
+
+    // Info subcommand
+    if let Some(submatches) = matches.subcommand_matches("info") {
+        return info::handle_info_command(submatches);
+    }
+
+    // Service subcommand
+    if let Some(submatches) = matches.subcommand_matches("service") {
+        return service::handle_service_command(submatches);
     }
 
     println!("{}", matches.usage());

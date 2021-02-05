@@ -6,6 +6,7 @@ mod prop;
 const LOG_PROPERTY: &str = "log4j.appender.file.File";
 
 pub use prop::get_config_properties_path;
+pub use prop::get_config_properties;
 
 /// Returns the configuration values in the order in which the properties are
 /// requested

@@ -14,7 +14,7 @@ enum LogAction {
 /// Handles all file related commands that requires opening files
 pub fn handle_open_command(submatches: &ArgMatches) {
     let file: &str = submatches.value_of("FILE").unwrap();
-    if file == "config" {
+    if file == "config" || file == "config.properties" {
         open_config_properties();
         return;
     }

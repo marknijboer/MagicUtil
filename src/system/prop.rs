@@ -30,7 +30,7 @@ pub fn get_mac_address() -> String {
     }
     
     let mac_string = format!("{}", mac_opt.unwrap());
-    mac_string
+    mac_string.trim().to_owned()
 }
 
 /// Returns the system's board ID on a Windows device by calling the inbuilt 
@@ -66,5 +66,5 @@ pub fn get_board_id() -> String {
         return String::from(STANDARD_BOARD_ID);
     }
 
-    str_out
+    str_out.trim().to_owned()
 }
