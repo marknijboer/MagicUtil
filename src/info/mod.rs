@@ -7,36 +7,38 @@ use crate::config::get_config_properties;
 /// Handles all system related commands.
 pub fn handle_info_command(submatches: &ArgMatches) {
     if submatches.is_present("database") {
-        get_database_info();
+        print_database_info();
         return;
     }
 
     if submatches.is_present("magicinfo") {
-        get_magicinfo_info();
+        print_magicinfo_info();
         return;
     }
 
     if submatches.is_present("service") {
-        get_service_info();
+        print_service_info();
         return;
     }
 
     if submatches.is_present("all") {
-        get_all_info();
+        print_all_info();
         return;
     }
 }
 
-fn get_all_info() {
+/// Returns an overview of the MagicINFO server
+fn print_all_info() {
     println!("---- MagicINFO ----");
-    get_magicinfo_info();
+    print_magicinfo_info();
     println!("---- Service ----");
-    get_service_info();
+    print_service_info();
     println!("---- Database ----");
-    get_database_info();
+    print_database_info();
 }
 
-fn get_magicinfo_info() {
+/// Prints MagicINFO related information
+fn print_magicinfo_info() {
     let database_info_elems = &["wsrm.premiumVersion", "CONTENTS_HOME", "web_url"];
     let properties_res = get_config_properties(database_info_elems);
     if let Err(e) = properties_res {
@@ -56,7 +58,8 @@ fn get_magicinfo_info() {
     println!("Web address:\t\t{}", weburl_opt.clone().unwrap());
 }
 
-fn get_database_info() {
+/// Prints database related information
+fn print_database_info() {
     let database_info_elems = &["wsrm.dbVendor", "wsrm.url", "wsrm.username", "wsrm.password"];
     let properties_res = get_config_properties(database_info_elems);
     if let Err(e) = properties_res {
@@ -79,7 +82,8 @@ fn get_database_info() {
     println!("Database password:\t{}", password_opt.clone().unwrap());
 }
 
-fn get_service_info() {
+/// Prints information about the MagicINFO service
+fn print_service_info() {
     let mut command = Command::new("powershell");
     command.args(&["-c", "$mi = (Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\"); Write-Host $mi.State; Write-Host $mi.StartName; Write-Host $mi.StartMode;"]);
     let output_res = command.output();

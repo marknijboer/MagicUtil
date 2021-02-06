@@ -1,10 +1,14 @@
+mod tail;
+
 use crate::config::{
     get_config_properties_path,
     get_log_directory
 };
+use tail::watch_file;
 use clap::ArgMatches;
 use std::process::exit;
 use std::process::Command;
+
 
 enum LogAction {
     Open,
@@ -75,6 +79,7 @@ fn open_config_properties() {
 
 /// Opens the given file in the editor
 fn open_file(file: &str) {
+    // TODO: fallback to C:\\Windows\\System32\\notepad.exe
     let mut command = Command::new("C:\\Program Files\\Notepad++\\notepad++.exe");
     command.args(&[file]);
 
@@ -90,17 +95,8 @@ fn open_file(file: &str) {
 
 /// Tails the given file and follows the output
 fn tail_file(file: &str) {
-    let file_str = format!("\"{}\"", file);
-
-    let mut command = Command::new("powershell");
-    command.args(&["-c", "Get-Content", &file_str, "-Tail", "10", "-Wait"]);
-
-    let handle_res = command.spawn();
-    if let Err(e) = handle_res {
+    if let Err(e) = watch_file(file) {
         eprintln!("{}", e);
         exit(1);
     }
-
-    let handle = handle_res.unwrap();
-    println!("Tailing file... ({})", handle.id())
 }
