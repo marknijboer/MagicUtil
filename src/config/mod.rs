@@ -1,12 +1,12 @@
-use clap::ArgMatches;
-use std::{path::PathBuf, process::exit};
-
 mod prop;
-
-const LOG_PROPERTY: &str = "log4j.appender.file.File";
 
 pub use prop::get_config_properties_path;
 pub use prop::get_config_properties;
+
+use clap::ArgMatches;
+use std::{collections::HashMap, path::PathBuf, process::exit};
+
+const LOG_PROPERTY: &str = "log4j.appender.file.File";
 
 /// Returns the configuration values in the order in which the properties are
 /// requested
@@ -24,11 +24,12 @@ pub fn handle_config_command(submatches: &ArgMatches) {
     }
 
     let property_values = property_values_res.unwrap();
-    for property in properties {
-        let property_value = property_values.get(property).unwrap();
-        println!("{}", property_value.clone().unwrap_or_default());
+    if submatches.is_present("json") {
+        print_as_json(property_values);
+        return;
     }
 
+    print_as_lines(property_values, &properties);
     return;
 }
 
@@ -50,4 +51,16 @@ pub fn get_log_directory() -> PathBuf {
     let log_path = log_path_opt.unwrap();
     let log_path_buf = PathBuf::from(log_path);
     PathBuf::from(log_path_buf.parent().unwrap())
+}
+
+fn print_as_json(data: HashMap<String, Option<String>>) {
+    let json = serde_json::ser::to_string(&data).unwrap();
+    println!("{}", json);
+}
+
+fn print_as_lines(data: HashMap<String, Option<String>>, properties: &[&str]) {
+    for property in properties {
+        let property_value = data.get(property.to_owned()).unwrap();
+        println!("{}", property_value.clone().unwrap_or_default());
+    }
 }

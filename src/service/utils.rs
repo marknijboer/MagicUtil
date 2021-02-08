@@ -12,11 +12,11 @@ pub enum ServiceAction {
 }
 
 /// Converts a service action to the corresponding Powershell command.
-pub fn action_to_command(action: ServiceAction) -> String {
+pub fn action_to_command(action: ServiceAction) -> &'static str {
     match action {
-        ServiceAction::Start => String::from("Start-Service"),
-        ServiceAction::Stop => String::from("Stop-Service"),
-        ServiceAction::Restart => String::from("Restart-Service"),
+        ServiceAction::Start => "Start-Service",
+        ServiceAction::Stop => "Stop-Service",
+        ServiceAction::Restart => "Restart-Service",
     }
 }
 
@@ -25,7 +25,7 @@ pub fn act_on_service(action: ServiceAction) {
     let action_cmd = action_to_command(action);
 
     let mut command = Command::new("powershell");
-    command.args(&["-c", action_cmd.as_str(), "MagicInfoPremium"]);
+    command.args(&["-c", action_cmd, "MagicInfoPremium"]);
 
     command.stdout(Stdio::null());
     command.stderr(Stdio::null());
@@ -97,7 +97,7 @@ pub fn get_status() -> String {
     command.args(&["-c", "(Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\").State"]);
     let output_res = command.output();
     if let Err(e) = output_res {
-        eprint!("{}", e);
+        eprintln!("{}", e);
         exit(1);
     }
     

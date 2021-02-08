@@ -8,7 +8,10 @@ use tail::watch_file;
 use clap::ArgMatches;
 use std::process::exit;
 use std::process::Command;
+use std::path::Path;
 
+const DEFAULT_NOTEPAD_PATH: &str = "C:\\Windows\\System32\\notepad.exe";
+const NOTEPAD_PP_PATH: &str = "C:\\Program Files\\Notepad++\\notepad++.exe";
 
 enum LogAction {
     Open,
@@ -79,8 +82,8 @@ fn open_config_properties() {
 
 /// Opens the given file in the editor
 fn open_file(file: &str) {
-    // TODO: fallback to C:\\Windows\\System32\\notepad.exe
-    let mut command = Command::new("C:\\Program Files\\Notepad++\\notepad++.exe");
+    let editor = get_editor_path();
+    let mut command = Command::new(editor);
     command.args(&[file]);
 
     let handle_res = command.spawn();
@@ -91,6 +94,16 @@ fn open_file(file: &str) {
 
     let handle = handle_res.unwrap();
     println!("Opened file with Notepad++... ({})", handle.id())
+}
+
+/// Tries to resolve the Notepad++ editor. If not found, it will return the path
+/// to the default notepad editor.
+fn get_editor_path() -> &'static str {
+    if Path::new(NOTEPAD_PP_PATH).exists() {
+        return NOTEPAD_PP_PATH;
+    }
+
+    return DEFAULT_NOTEPAD_PATH;
 }
 
 /// Tails the given file and follows the output
