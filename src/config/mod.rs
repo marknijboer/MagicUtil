@@ -4,7 +4,9 @@ pub use prop::get_config_properties_path;
 pub use prop::get_config_properties;
 
 use clap::ArgMatches;
-use std::{collections::HashMap, path::PathBuf, process::exit};
+use std::{path::PathBuf, process::exit};
+
+use crate::utils::{print_as_json, print_as_lines};
 
 const LOG_PROPERTY: &str = "log4j.appender.file.File";
 
@@ -51,16 +53,4 @@ pub fn get_log_directory() -> PathBuf {
     let log_path = log_path_opt.unwrap();
     let log_path_buf = PathBuf::from(log_path);
     PathBuf::from(log_path_buf.parent().unwrap())
-}
-
-fn print_as_json(data: HashMap<String, Option<String>>) {
-    let json = serde_json::ser::to_string(&data).unwrap();
-    println!("{}", json);
-}
-
-fn print_as_lines(data: HashMap<String, Option<String>>, properties: &[&str]) {
-    for property in properties {
-        let property_value = data.get(property.to_owned()).unwrap();
-        println!("{}", property_value.clone().unwrap_or_default());
-    }
 }

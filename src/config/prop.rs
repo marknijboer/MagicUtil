@@ -34,22 +34,24 @@ pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
 pub fn get_config_properties(properties: &[&str]) -> Result<ConfigValueMap, SimpleError> {
     let config_properties_path = get_config_properties_path()?;
     let config_properties = File::open(config_properties_path).unwrap();
-    if let Ok(configuration) = read(BufReader::new(config_properties)) {
+    let configuration_res = read(BufReader::new(config_properties));
 
-        let mut config_map = ConfigValueMap::new();
-
-        for property in properties {
-            let value = if let Some(val) = configuration.get(property.to_owned()) {
-                Some(val.clone())
-            } else {
-                None
-            };
-
-            config_map.insert(String::from(property.to_owned()), value);
-        }
-
-        return Ok(config_map);
+    if configuration_res.is_err() {
+        return Err(SimpleError::new("Could not read the config.properties file."));
     }
 
-    Err(SimpleError::new("Could not read the config.properties file."))
+    let configuration = configuration_res.unwrap();
+    let mut config_map = ConfigValueMap::new();
+
+    for property in properties {
+        let value = if let Some(val) = configuration.get(property.to_owned()) {
+            Some(val.clone())
+        } else {
+            None
+        };
+
+        config_map.insert(String::from(property.to_owned()), value);
+    }
+
+    Ok(config_map)
 }

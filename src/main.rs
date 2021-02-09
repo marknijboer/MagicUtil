@@ -1,4 +1,5 @@
 #[macro_use] extern crate lazy_static;
+#[macro_use] extern crate serde;
 
 mod system;
 mod config;
@@ -6,6 +7,7 @@ mod service;
 mod cli;
 mod open;
 mod info;
+mod utils;
 
 fn main() {
     // System subcommand

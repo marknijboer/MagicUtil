@@ -1,4 +1,4 @@
-use std::{io::{Read, Write}, net::TcpStream, process::{Command, Stdio, exit}, thread, time};
+use std::{collections::HashMap, net::TcpStream, process::{Command, Stdio, exit}, thread, time};
 
 lazy_static! {
     pub static ref ONE_SECOND: time::Duration = time::Duration::from_secs(1);
@@ -47,35 +47,14 @@ pub fn wait_until_available() {
     }
 }
 
-/// Tests if the service is available by checking the HTTP port. It should return
-/// a HTTP response to a HTTP request.
+/// Tests if the service is available by checking if the FTP port is open for
+/// for connections
 pub fn service_is_available() -> bool {
-    if let Ok(mut stream) = TcpStream::connect("127.0.0.1:7001") {
-        let result = stream.set_read_timeout(Some(time::Duration::from_secs(1)));
-        if let Err(_) = result {
-            return false;
-        }
-
-        let result = stream.write("GET /MagicInfo/ HTTP/1.1\r\n\r\n".as_bytes());
-        if let Err(_) = result {
-            return false;
-        }
-
-        let mut buffer = String::new();
-        let result = stream.read_to_string(&mut buffer);
-        if let Err(_) = result {
-            return false;
-        }
-
-        let bytes = result.unwrap();
-        if !(&buffer[..bytes]).starts_with("HTTP") {
-            return false;
-        }
-
-        return true;
+    if TcpStream::connect("127.0.0.1:21").is_err() {
+        return false;
     }
 
-    return false;
+    true
 }
 
 /// Watches the state of the MagicINFO service and returns only if the state
@@ -105,4 +84,29 @@ pub fn get_status() -> String {
     let output = String::from_utf8(status).unwrap();
 
     return String::from(output.trim());
+}
+
+/// Returns information about the service that runs MagicINFO.
+pub fn get_service_status() -> HashMap<String, Option<String>> {
+    let mut command = Command::new("powershell");
+    command.args(&["-c", "$mi = (Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\"); Write-Host $mi.State; Write-Host $mi.StartName; Write-Host $mi.StartMode;"]);
+    
+    let mut property_map = HashMap::new();
+    
+    let output_res = command.output();
+    if output_res.is_err() {
+        property_map.insert(String::from("state"), None);
+        property_map.insert(String::from("serviceUser"), None);
+        property_map.insert(String::from("startMode"), None);
+    } else {
+        let start_type = output_res.unwrap().stdout;
+        let output = String::from_utf8(start_type).unwrap();
+        let output_split: Vec<&str> = output.trim().split("\n").collect();
+
+        property_map.insert(String::from("state"), Some(String::from(output_split[0])));
+        property_map.insert(String::from("serviceUser"), Some(String::from(output_split[1])));
+        property_map.insert(String::from("startMode"), Some(String::from(output_split[2])));
+    }
+
+    property_map
 }
