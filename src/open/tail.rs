@@ -10,10 +10,10 @@ pub fn watch_file(file: &str) -> Result<(), io::Error> {
 
     let mut reader = BufReader::new(f);
     let mut line = String::new();
-    let mut pos: u64 = 0;
+    let mut pos: u64;
 
     // Go to the end of the file
-    reader.seek(SeekFrom::End(0)).unwrap();
+    pos = reader.seek(SeekFrom::End(0)).unwrap();
 
     // Start watching for new lines
     loop {
