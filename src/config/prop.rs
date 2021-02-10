@@ -1,6 +1,6 @@
 use java_properties::read;
 use simple_error::SimpleError;
-use std::{collections::HashMap, fs::File};
+use std::{collections::HashMap, fs::File, process::exit};
 use std::io::BufReader;
 use std::env;
 use std::path::PathBuf;
@@ -9,16 +9,7 @@ type ConfigValueMap = HashMap<String, Option<String>>;
 
 /// Returns the full path to the config.properties file.
 pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
-    let home_path_res = env::var("MAGICINFO_PREMIUM_HOME");
-    if let Err(e) = home_path_res {
-        let error_message = format!("Could not find environment variable `MAGICINFO_PREMIUM_HOME`: {}", e.to_string());
-        return Err(SimpleError::new(error_message));
-    }
-
-    let home_path = home_path_res.unwrap();
-    let mut config_properties_path = PathBuf::new();
-
-    config_properties_path.push(home_path);
+    let mut config_properties_path = get_mi_home_dir();
     config_properties_path.push("conf");
     config_properties_path.push("config.properties");
 
@@ -28,6 +19,22 @@ pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
     }
 
     Ok(config_properties_path)
+}
+
+/// Returns the MagicINFO home directory.
+pub fn get_mi_home_dir() -> PathBuf {
+    let home_path_res = env::var("MAGICINFO_PREMIUM_HOME");
+    if let Err(e) = home_path_res {
+        let error_message = format!("Could not find environment variable `MAGICINFO_PREMIUM_HOME`: {}", e.to_string());
+        eprintln!("{}", error_message);
+        exit(1);
+    }
+
+    let home_path = home_path_res.unwrap();
+    let mut config_dir = PathBuf::new();
+    config_dir.push(home_path);
+
+    config_dir
 }
 
 /// Searches in the config.properties file for the requested properties.

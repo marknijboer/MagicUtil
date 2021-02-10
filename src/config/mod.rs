@@ -1,6 +1,7 @@
 mod prop;
 
 pub use prop::get_config_properties_path;
+pub use prop::get_mi_home_dir;
 pub use prop::get_config_properties;
 
 use clap::ArgMatches;
