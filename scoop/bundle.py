@@ -8,6 +8,12 @@ WINDOWS_RELEASE_EXEC = 'target/x86_64-pc-windows-gnu/release/MagicUtil.exe'
 WINDOWS_RELEASE_ZIP = 'dist/magicutil-x86_64.zip'
 
 def create_zip():
+    """Zips the latest MagicUtil binary
+    
+    Will look for the MagicUtil binary in path `WINDOWS_RELEASE_EXEC` and add
+    it to the release zip file that will be placed in path `WINDOWS_RELEASE_ZIP`.
+    """
+
     zf = zipfile.ZipFile(WINDOWS_RELEASE_ZIP, mode='w')
     try:
         zf.write(WINDOWS_RELEASE_EXEC, arcname='MagicUtil.exe')
@@ -15,12 +21,24 @@ def create_zip():
         zf.close()
 
 def calculate_zip_hash():
+    """Returns a HEX encoded hash from the zip file
+    
+    Calculates a SHA-256 hash from the zip file located in path
+    `WINDOWS_RELEASE_ZIP` and returns it as HEX encoded.
+    """
+
     with open(WINDOWS_RELEASE_ZIP,"rb") as f:
         bytes = f.read() # read entire file as bytes
         readable_hash = hashlib.sha256(bytes).hexdigest();
         return readable_hash
 
 def find_app_version():
+    """Returns the MagicUtil version
+    
+    Reads the Cargo.toml file and searches for the MagicUtil version as
+    configured in the file.
+    """
+
     version_reg = re.compile('^version? =? "([0-9\.]+)"', flags=re.MULTILINE)
     with open('Cargo.toml', 'r') as file:
         data = file.read()
@@ -31,6 +49,12 @@ def find_app_version():
         return matches[0]
 
 def create_release_json(ziphash, version):
+    """Creates a release file for scoop
+    
+    Takes the release file template, adds all custom values and places the new
+    file in the dist folder.
+    """
+
     with open('scoop/magicutil-base.json', 'r') as myfile:
         data = myfile.read()
     # parse file
@@ -44,6 +68,9 @@ def create_release_json(ziphash, version):
         release_file.write(release_str)
 
 def main():
+    """Handles the release of a new MagicUtil scoop version
+    """
+
     print("Bundling the executable in a zip file...")
     create_zip()
     ziphash = calculate_zip_hash()
