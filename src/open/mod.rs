@@ -176,12 +176,41 @@ fn open_file(file: &str) {
 
 /// Tries to resolve the Notepad++ editor. If not found, it will return the path
 /// to the default notepad editor.
-fn get_editor_path() -> &'static str {
+fn get_editor_path<'a>() -> String {
+    // Search in the default Notepad++ installation directory.
     if Path::new(NOTEPAD_PP_PATH).exists() {
-        return NOTEPAD_PP_PATH;
+        return String::from(NOTEPAD_PP_PATH);
     }
 
-    return DEFAULT_NOTEPAD_PATH;
+    // Use the `where` command to search it in other directories, e.g. installed
+    // with scoop.
+    if let Some(notepad_pp_path) = resolve_notepad_pp() {
+        return notepad_pp_path;
+    }
+
+    // Fallback on the default plain Windows editor
+    return String::from(DEFAULT_NOTEPAD_PATH);
+}
+
+/// Tries to resolve the Notepad++ editor and returns an option with the path.
+fn resolve_notepad_pp() -> Option<String> {
+    let mut command = Command::new("where");
+    command.args(&["notepad++"]);
+    let output_res = command.output();
+
+    if output_res.is_err() {
+        return None;
+    }
+
+    let output = output_res.unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let stdout_trimmed = stdout.trim().to_owned();
+
+    if stdout_trimmed.is_empty() {
+        return None;
+    }
+
+    Some(stdout_trimmed)
 }
 
 /// Tails the given file and follows the output

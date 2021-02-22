@@ -2,7 +2,7 @@
 
 A set of utilities useful on a MagicINFO server compiled to a single binary. Most of the commands have optional JSON output which can be used in other programs.
 
-```bash
+```
 MagicINFO Util 1.0
 Useful utilities on a MagicINFO server
 
