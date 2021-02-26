@@ -15,6 +15,9 @@ pub struct PropertiesMut {
 }
 
 impl PropertiesMut {
+
+    /// Creates an instance of the PropertiesMut with the given file. That file
+    /// should exist.
     pub fn open(path: &str) -> Result<Self, SimpleError> {
         File::open(path).map_err(|e| {
             let message = format!("Could not load properties file: {}", e);
@@ -27,10 +30,13 @@ impl PropertiesMut {
         })
     }
 
+    /// Adds a mutation for the current PropertiesMut
     pub fn set(&mut self, key: &str, value: &str) {
         &self.mutations.insert(String::from(key), String::from(value));
     }
 
+    /// Returns the content of the config.properties file with the mutations
+    /// applied as a string.
     pub fn get_content(&self) -> Result<String, SimpleError> {
         let mut property_buffer = String::new();
         let mut mutations_clone = self.mutations.clone();
@@ -68,6 +74,8 @@ impl PropertiesMut {
         Ok(property_buffer)
     }
 
+    /// Writes the content of the config.properties file with the mutations
+    /// applied to the original config.properties file.
     pub fn write(&self) -> Result<(), SimpleError> {
         let content = self.get_content()?;
 
@@ -91,6 +99,8 @@ impl PropertiesMut {
         Ok(())
     }
 
+    /// A private method that tries to find the properties key from the given
+    /// line. Returns an Option containing the key or None if no key was found.
     fn get_key(&self, line: &str) -> Option<String> {
         let trimmed_line = line.trim();
         if trimmed_line.is_empty() || trimmed_line.starts_with("#") {

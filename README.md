@@ -3,7 +3,7 @@
 A set of utilities useful on a MagicINFO server compiled to a single binary. Most of the commands have optional JSON output which can be used in other programs.
 
 ```
-MagicINFO Util 1.0
+MagicINFO Util 0.1.2
 Useful utilities on a MagicINFO server
 
 USAGE:
@@ -60,11 +60,16 @@ Getting an overview of the server you're currently working on:
 
 ### Query certain configuration values
 ```bash
-> magicutil.exe config device.log4j.on device.log4j.level --json | jq
+> magicutil.exe config get device.log4j.on device.log4j.level --json | jq
 {
   "device.log4j.on": "false",
   "device.log4j.level": "INFO"
 }
+```
+
+### Setting certain configuration values
+```bash
+> magicutil.exe config set listen.port 7001
 ```
 
 ### Opening files
