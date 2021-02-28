@@ -16,7 +16,6 @@ panic = "abort"
 [dependencies]
 md5 = "0.7.0"
 mac_address = "1.1.1"
-java-properties = { version = "1.3.0", default-features = false }
 simple-error = "0.2.3"
 clap = "2.33.3"
 lazy_static = "1.4.0"

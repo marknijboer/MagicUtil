@@ -3,7 +3,7 @@ use std::{collections::HashMap, process::{exit}};
 use clap::ArgMatches;
 use crate::{config::get_config_properties, utils::print_as_lines_with_context};
 use crate::system::get_system_values;
-use crate::utils::{print_as_json};
+use crate::utils::print_as_json;
 use crate::service::get_service_status;
 
 const MAGICINFO_INFO_ELEMS: &[&str] = &["wsrm.premiumVersion", "web_url", "CONTENTS_HOME"];

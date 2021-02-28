@@ -1,7 +1,6 @@
-use java_properties::read;
+use super::properties::PropertiesMut;
 use simple_error::SimpleError;
-use std::{collections::HashMap, fs::File, process::exit};
-use std::io::BufReader;
+use std::{collections::HashMap, process::exit};
 use std::env;
 use std::path::PathBuf;
 
@@ -40,14 +39,14 @@ pub fn get_mi_home_dir() -> PathBuf {
 /// Searches in the config.properties file for the requested properties.
 pub fn get_config_properties(properties: &[&str]) -> Result<ConfigValueMap, SimpleError> {
     let config_properties_path = get_config_properties_path()?;
-    let config_properties = File::open(config_properties_path).unwrap();
-    let configuration_res = read(BufReader::new(config_properties));
-
-    if configuration_res.is_err() {
+    let config_properties_res = PropertiesMut::open(config_properties_path.to_str().unwrap());
+    if config_properties_res.is_err() {
         return Err(SimpleError::new("Could not read the config.properties file."));
     }
 
-    let configuration = configuration_res.unwrap();
+    let config_properties = config_properties_res.unwrap();
+    let configuration = config_properties.get_hashmap_content().unwrap();
+
     let mut config_map = ConfigValueMap::new();
 
     for property in properties {

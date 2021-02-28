@@ -30,6 +30,10 @@ pub fn handle_config_command(submatches: &ArgMatches) {
         return replace_config_value(subsubmatches);
     }
 
+    if let Some(subsubmatches) = submatches.subcommand_matches("remove") {
+        return remove_config_value(subsubmatches);
+    }
+
     println!("{}", submatches.usage())
 }
 
@@ -124,6 +128,30 @@ fn set_config_value(submatches: &ArgMatches) {
     }
 }
 
+/// Removes a config property value
+fn remove_config_value(submatches: &ArgMatches) {
+    let key = submatches.value_of("KEY").unwrap();
+
+    if key.is_empty() {
+        eprintln!("Expected a key to remove");
+        exit(1);
+    }
+
+    let property_res = get_property_mut();
+    if let Err(e) = property_res {
+        eprintln!("{}", e);
+        exit(1);
+    }
+
+    let mut property = property_res.unwrap();
+    property.remove(key);
+    let property_write_res = property.write();
+    if let Err(e) = property_write_res {
+        eprintln!("{}", e);
+        exit(1);
+    }
+}
+
 /// Returns the log directory path
 pub fn get_log_directory() -> PathBuf {
     let property_values_res = config_util::get_config_properties(&[LOG_PROPERTY]);
@@ -144,6 +172,7 @@ pub fn get_log_directory() -> PathBuf {
     PathBuf::from(log_path_buf.parent().unwrap())
 }
 
+/// Returns the PropertiesMut from the MagicINFO's main config.properties file.
 fn get_property_mut() -> Result<PropertiesMut, SimpleError>{
     let config_path = get_config_properties_path()?;
     let config_path_str = config_path.to_str().unwrap();
