@@ -1,4 +1,5 @@
 use mac_address;
+use local_ipaddress;
 use std::process::Command;
 use md5;
 
@@ -67,4 +68,13 @@ pub fn get_board_id() -> String {
     }
 
     str_out.trim().to_owned()
+}
+
+pub fn get_ip_address() -> String {
+    let ipaddr_opt = local_ipaddress::get();
+    if ipaddr_opt.is_some() {
+        return ipaddr_opt.unwrap();
+    }
+
+    String::new()
 }

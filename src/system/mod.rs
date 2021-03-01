@@ -41,6 +41,7 @@ fn get_system_value(key: &str) -> Option<String> {
         "boardid" => Some(prop::get_board_id()),
         "hwunique" => Some(prop::get_hwunique()),
         "macaddress" => Some(prop::get_mac_address()),
+        "ipaddress" => Some(prop::get_ip_address()),
         _ => None
     }
 }
