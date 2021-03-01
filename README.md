@@ -1,9 +1,11 @@
 # MagicUtil
 
-A set of utilities useful on a MagicINFO server compiled to a single binary. Most of the commands have optional JSON output which can be used in other programs.
+A set of utilities useful on a MagicINFO server compiled to a single binary.
+Most of the commands have optional JSON output which can be used in other
+programs.
 
 ```
-MagicINFO Util 0.1.2
+MagicINFO Util 0.1.3
 Useful utilities on a MagicINFO server
 
 USAGE:
@@ -24,10 +26,14 @@ SUBCOMMANDS:
 
 ```
 ## Why does it exist?
-Being a mostly Linux person, clicking through the interface in Windows to search certain configuration files or to tail and follow logs feels less efficient than it does on a Linux machine. Doing all this with a few simple commands in CMD or Powershell helps a lot when doing maintanance on a MagicINFO server.
+Being a mostly Linux person, clicking through the interface in Windows to search
+certain configuration files or to tail and follow logs feels less efficient
+than it does on a Linux machine. Doing all this with a few simple commands in
+CMD or Powershell helps a lot when doing maintanance on a MagicINFO server.
 
 ## What can it do?
-The program can do more than the things listed below. This is just an example of what it does.
+The program can do more than the things listed below. This is just an example of
+what it does.
 
 ### Get server information
 Getting an overview of the server you're currently working on:
@@ -73,7 +79,10 @@ Getting an overview of the server you're currently working on:
 ```
 
 ### Opening files
-It checks if you have Notepad++ installed. If not, it will fall back to the Windows built-in notepad.exe. Note that you don't have to be in the same folder as the file you're requesting. The program knows the location of these files and opens them:
+It checks if you have Notepad++ installed. If not, it will fall back to the
+Windows built-in notepad.exe. Note that you don't have to be in the same folder
+as the file you're requesting. The program knows the location of these files and
+opens them:
 ```bash
 > magicutil.exe open config.properties
 Opened file with Notepad++...
@@ -86,7 +95,9 @@ All new output from that file will be printed to the terminal:
 ```
 
 ### Manage the Windows service
-Doesn't only test if the service is running, but also if it is available and loaded. This will check if the (fairly long) startup procedure has finished and if the interface is available:
+Doesn't only test if the service is running, but also if it is available and
+loaded. This will check if the (fairly long) startup procedure has finished and
+if the interface is available:
 ```bash
 > magicutil.exe service available --json | jq
 {
@@ -113,5 +124,4 @@ Use scoop to install this application:
 scoop install https://cdn.wherever.network/scoop/magicutil.json
 ```
 ### Download
-
 Or download a version from the [releases page](https://github.com/marknijboer/MagicUtil/releases).
