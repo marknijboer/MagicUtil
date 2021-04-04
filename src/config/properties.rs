@@ -154,7 +154,7 @@ impl PropertiesMut {
     /// line. Returns an Option containing the key or None if no key was found.
     fn get_key(&self, line: &str) -> Option<String> {
         let trimmed_line = line.trim();
-        if trimmed_line.is_empty() || trimmed_line.starts_with("#") {
+        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!") {
             return None;
         }
 
@@ -176,7 +176,7 @@ impl PropertiesMut {
     /// found.
     fn get_key_values(&self, line: &str) -> Option<(String, String)> {
         let trimmed_line = line.trim();
-        if trimmed_line.is_empty() || trimmed_line.starts_with("#") {
+        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!") {
             return None;
         }
 
