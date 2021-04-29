@@ -5,7 +5,7 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicINFO Util 0.1.3
+MagicINFO Util 0.1.4
 Useful utilities on a MagicINFO server
 
 USAGE:
