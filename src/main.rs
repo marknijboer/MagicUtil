@@ -8,6 +8,7 @@ mod cli;
 mod open;
 mod info;
 mod utils;
+mod encrypt;
 
 fn main() {
     // System subcommand

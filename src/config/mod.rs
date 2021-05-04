@@ -7,13 +7,14 @@ pub use config_util::get_config_properties;
 
 use clap::ArgMatches;
 use simple_error::SimpleError;
-use std::{path::PathBuf, process::exit};
+use std::{collections::HashMap, path::PathBuf, process::exit};
 
-use crate::utils::{print_as_json, print_as_lines};
+use crate::{encrypt, utils::{print_as_json, print_as_lines}};
 
 use self::properties::PropertiesMut;
 
 const LOG_PROPERTY: &str = "log4j.appender.file.File";
+const ENCRYPTION_KEY_PROPERTY: &str = "encrypt.manager.key.v1";
 
 /// Returns the configuration values in the order in which the properties are
 /// requested
@@ -51,7 +52,16 @@ fn get_config_values(submatches: &ArgMatches) {
         exit(1);
     }
 
-    let property_values = property_values_res.unwrap();
+    let mut property_values = property_values_res.unwrap();
+    if submatches.is_present("decrypt") {
+        let encryption_key_res = get_encryption_key();
+        if let Err(e) = encryption_key_res {
+            eprintln!("{}", e);
+            exit(1);
+        }
+        decrypt_hashmap(&mut property_values, &encryption_key_res.unwrap());
+    }
+
     if submatches.is_present("json") {
         print_as_json(property_values);
         return;
@@ -106,7 +116,7 @@ fn replace_config_value(submatches: &ArgMatches) {
 /// Sets one config property value
 fn set_config_value(submatches: &ArgMatches) {
     let key = submatches.value_of("KEY").unwrap();
-    let value = submatches.value_of("VALUE").unwrap();
+    let mut value = submatches.value_of("VALUE").unwrap().to_owned();
 
     if key.is_empty() || value.is_empty() {
         eprintln!("Expected one key and one value");
@@ -119,8 +129,23 @@ fn set_config_value(submatches: &ArgMatches) {
         exit(1);
     }
 
+    if submatches.is_present("encrypt") {
+        let encryption_key_res = get_encryption_key();
+        if let Err(e) = encryption_key_res {
+            eprintln!("{}", e);
+            exit(1);
+        }
+        let encryption_res = encrypt::aes_128_ecb_encrypt(&encryption_key_res.unwrap(), &value);
+        if let Err(e) = encryption_res {
+            eprintln!("{}", e);
+            exit(1);
+        }
+
+        value = encryption_res.unwrap();
+    }
+
     let mut property = property_res.unwrap();
-    property.set(key, value);
+    property.set(key, &value);
     let property_write_res = property.write();
     if let Err(e) = property_write_res {
         eprintln!("{}", e);
@@ -179,4 +204,34 @@ fn get_property_mut() -> Result<PropertiesMut, SimpleError>{
     let property_mut = properties::PropertiesMut::open(config_path_str)?;
 
     Ok(property_mut)
+}
+
+// Tries to decrypt all values in the hashmap. If a value fails, it will be skipped.
+fn decrypt_hashmap(map: &mut HashMap<String, Option<String>>, encryption_key: &str) {
+    let mut mutations: HashMap<String, String> = HashMap::new();
+    for (key, value_opt) in map.iter() {
+        if value_opt.is_some() {
+            let value = value_opt.clone().unwrap();
+            let decryption_res = encrypt::aes_128_ecb_decrypt(encryption_key, &value);
+            if let Ok(decrypted_string) = decryption_res {
+                mutations.insert(key.clone(), decrypted_string);
+            }
+        }
+    }
+
+    for (mutation_key, mutation_value) in mutations {
+        map.insert(mutation_key, Some(mutation_value));
+    }
+}
+
+// Searches for the encryption key in the config.properties file.
+fn get_encryption_key() -> Result<String, SimpleError> {
+    let config_list = config_util::get_config_properties(&[ENCRYPTION_KEY_PROPERTY])?;
+    let encryption_key_opt = config_list.get(ENCRYPTION_KEY_PROPERTY).unwrap().clone();
+
+    if encryption_key_opt.is_none() {
+        return Err(SimpleError::new("The encryption key could not be found in the config.properties."));
+    }
+
+    Ok(encryption_key_opt.unwrap())
 }
