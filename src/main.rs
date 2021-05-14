@@ -1,5 +1,8 @@
 #[cfg(not(windows))]
 use std::process::exit;
+#[cfg(not(windows))]
+use clap::ArgMatches;
+
 #[cfg(windows)]
 #[macro_use] 
 extern crate lazy_static;
@@ -41,7 +44,7 @@ fn main() {
         return open::handle_open_command(submatches);
 
         #[cfg(not(windows))]
-        only_implemented_on_windows();
+        only_implemented_on_windows(submatches);
     }
 
     // Tail subcommand
@@ -50,7 +53,7 @@ fn main() {
         return open::handle_tail_command(submatches);
 
         #[cfg(not(windows))]
-        only_implemented_on_windows();
+        only_implemented_on_windows(submatches);
     }
 
     // Info subcommand
@@ -59,7 +62,7 @@ fn main() {
         return info::handle_info_command(submatches);
 
         #[cfg(not(windows))]
-        only_implemented_on_windows();
+        only_implemented_on_windows(submatches);
     }
 
     // Service subcommand
@@ -68,14 +71,14 @@ fn main() {
         return service::handle_service_command(submatches);
 
         #[cfg(not(windows))]
-        only_implemented_on_windows();
+        only_implemented_on_windows(submatches);
     }
 
     println!("{}", matches.usage());
 }
 
 #[cfg(not(windows))]
-fn only_implemented_on_windows() {
+fn only_implemented_on_windows(_submatches: &ArgMatches) {
     eprintln!("This function is only implemented on Windows");
     exit(1);
 }
