@@ -7,13 +7,20 @@ pub use config_util::get_config_properties;
 
 use clap::ArgMatches;
 use simple_error::SimpleError;
-use std::{collections::HashMap, path::PathBuf, process::exit};
+use std::{
+    collections::HashMap,
+    process::exit
+};
+#[cfg(windows)]
+use std::path::PathBuf;
 
 use crate::{encrypt, utils::{print_as_json, print_as_lines}};
 
 use self::properties::PropertiesMut;
 
+#[cfg(windows)]
 const LOG_PROPERTY: &str = "log4j.appender.file.File";
+
 const ENCRYPTION_KEY_PROPERTY: &str = "encrypt.manager.key.v1";
 
 /// Returns the configuration values in the order in which the properties are
@@ -178,6 +185,7 @@ fn remove_config_value(submatches: &ArgMatches) {
 }
 
 /// Returns the log directory path
+#[cfg(windows)]
 pub fn get_log_directory() -> PathBuf {
     let property_values_res = config_util::get_config_properties(&[LOG_PROPERTY]);
     if let Err(e) = property_values_res {
