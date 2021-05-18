@@ -13,7 +13,6 @@ pub fn print_as_lines(data: HashMap<String, Option<String>>, properties: &[&str]
     }
 }
 
-#[cfg(windows)]
 pub fn print_as_lines_with_context(data: HashMap<String, Option<String>>, properties: &[&str]) {
     for property in properties {
         let property_value = data.get(property.to_owned()).unwrap();
@@ -22,7 +21,6 @@ pub fn print_as_lines_with_context(data: HashMap<String, Option<String>>, proper
     }
 }
 
-#[cfg(windows)]
 fn get_tabs_for_key<'a>(len: usize) -> &'a str {
     if len < 8 {
         return "\t\t\t\t";

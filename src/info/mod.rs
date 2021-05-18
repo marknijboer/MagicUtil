@@ -52,7 +52,6 @@ pub fn handle_info_command(submatches: &ArgMatches) {
         return;
     }
 
-    #[cfg(windows)]
     if let Some(subsubmatches) = submatches.subcommand_matches("service") {
         if subsubmatches.is_present("json") {
             print_json(get_service_status);
