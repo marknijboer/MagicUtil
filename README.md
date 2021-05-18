@@ -5,7 +5,7 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicINFO Util 0.1.4
+MagicINFO Util 0.1.5
 Useful utilities on a MagicINFO server
 
 USAGE:
@@ -73,9 +73,19 @@ Getting an overview of the server you're currently working on:
 }
 ```
 
+### Query encrypted configuration values
+```bash
+> magicutil.exe config get wsrm.username wsrm.password --decrypt --json | jq
+{
+  "wsrm.username": "postgres",
+  "wsrm.password": "password"
+}
+```
+
 ### Setting certain configuration values
 ```bash
 > magicutil.exe config set listen.port 7001
+> magicutil.exe config set wsrm.username postgres --encrypt
 ```
 
 ### Opening files
