@@ -71,6 +71,8 @@ pub fn handle_info_command(submatches: &ArgMatches) {
         print_all_info_as_lines();
         return;
     }
+
+    println!("{}", submatches.usage())
 }
 
 /// Prints all information as plain text
