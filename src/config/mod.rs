@@ -57,9 +57,9 @@ fn get_config_values(submatches: &ArgMatches) {
         let encryption_key_res = get_encryption_key();
         if let Err(e) = encryption_key_res {
             eprintln!("{}", e);
-            exit(1);
+        } else {
+            decrypt_hashmap(&mut property_values, &encryption_key_res.unwrap());
         }
-        decrypt_hashmap(&mut property_values, &encryption_key_res.unwrap());
     }
 
     if submatches.is_present("json") {
