@@ -9,6 +9,7 @@ mod open;
 mod info;
 mod utils;
 mod encrypt;
+mod bcrypt;
 
 fn main() {
     // System subcommand
@@ -40,6 +41,11 @@ fn main() {
     // Service subcommand
     if let Some(submatches) = matches.subcommand_matches("service") {
         return service::handle_service_command(submatches);
+    }
+
+    // Bcrypt subcommand
+    if let Some(submatches) = matches.subcommand_matches("bcrypt") {
+        return bcrypt::handle_bcrypt_command(submatches);
     }
 
     println!("{}", matches.usage());
