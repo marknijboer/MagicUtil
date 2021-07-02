@@ -38,7 +38,7 @@ what it does.
 ### Get server information
 Getting an overview of the server you're currently working on:
 ```powershell
-PS C:\> magicutil.exe info all --json | jq
+PS C:\> magicutil info all --json | jq
 {
   "magicinfo": {
     "CONTENTS_HOME": "C:/MagicInfo Premium/runtime/upload",
@@ -66,7 +66,7 @@ PS C:\> magicutil.exe info all --json | jq
 
 ### Query certain configuration values
 ```powershell
-PS C:\> magicutil.exe config get device.log4j.on device.log4j.level --json | jq
+PS C:\> magicutil config get device.log4j.on device.log4j.level --json | jq
 {
   "device.log4j.on": "false",
   "device.log4j.level": "INFO"
@@ -75,7 +75,7 @@ PS C:\> magicutil.exe config get device.log4j.on device.log4j.level --json | jq
 
 ### Query encrypted configuration values
 ```powershell
-PS C:\> magicutil.exe config get wsrm.username wsrm.password --decrypt --json | jq
+PS C:\> magicutil config get wsrm.username wsrm.password --decrypt --json | jq
 {
   "wsrm.username": "postgres",
   "wsrm.password": "password"
