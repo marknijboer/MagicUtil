@@ -1,6 +1,6 @@
 [package]
 name = "magicutil"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Mark Nijboer"]
 edition = "2018"
 
