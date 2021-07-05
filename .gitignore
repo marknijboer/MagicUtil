@@ -1,5 +1,4 @@
 /target
-/dist/*
-!/dist/.keep
+/dist
 
 /tmp
