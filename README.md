@@ -5,7 +5,7 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicINFO Util 0.1.6
+MagicINFO Util 0.1.7
 Useful utilities on a MagicINFO server
 
 USAGE:
@@ -108,7 +108,7 @@ PS C:\> magicutil tail wsrm.log
 A string of text can be converted to a password hash, as used in MagicINFO's database to authenticate a user.
 ```powershell
 PS C:\> magicutil bcrypt hash testpassword
-$2b$12$91MkpP94Jhd6Uhy2gZlDxOMpvPo04zX5uekxMp78IENSp9pYEJf9e
+$2a$10$91MkpP94Jhd6Uhy2gZlDxOMpvPo04zX5uekxMp78IENSp9pYEJf9e
 ```
 
 ### Manage the Windows service
