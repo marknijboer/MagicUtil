@@ -135,10 +135,5 @@ To compile this program yourself execute:
 make windows
 ```
 
-### Scoop
-Use scoop to install this application:
-```powershell
-scoop install https://cdn.wherever.network/scoop/magicutil.json
-```
 ### Download
 Or download a version from the [releases page](https://github.com/marknijboer/MagicUtil/releases).
