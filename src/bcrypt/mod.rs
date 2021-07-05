@@ -1,6 +1,6 @@
 use std::process::exit;
 
-use bcrypt;
+use pwhash::bcrypt::{self, BcryptSetup, BcryptVariant};
 use clap::ArgMatches;
 
 /// Handles all system related commands.
@@ -20,7 +20,12 @@ fn hash_plaintext(submatches: &ArgMatches) {
         exit(1);
     }
 
-    let hash_res = bcrypt::hash(key, bcrypt::DEFAULT_COST);
+    let hash_res = bcrypt::hash_with(BcryptSetup{
+        variant: Some(BcryptVariant::V2a),
+        salt: None,
+        cost: None,
+    }, key);
+
     if let Err(hash_err) = hash_res {
         eprintln!("Could not hash plaintext: {:?}", hash_err);
         exit(1);
