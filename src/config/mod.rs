@@ -1,5 +1,6 @@
 mod config_util;
 mod properties;
+mod encrypted;
 
 pub use config_util::get_config_properties_path;
 pub use config_util::get_mi_home_dir;
@@ -9,7 +10,7 @@ use clap::ArgMatches;
 use simple_error::SimpleError;
 use std::{collections::HashMap, path::PathBuf, process::exit};
 
-use crate::{encrypt, utils::{print_as_json, print_as_lines}};
+use crate::utils::{print_as_json, print_as_lines};
 
 use self::properties::PropertiesMut;
 
@@ -19,23 +20,13 @@ const ENCRYPTION_KEY_PROPERTY: &str = "encrypt.manager.key.v1";
 /// Returns the configuration values in the order in which the properties are
 /// requested
 pub fn handle_config_command(submatches: &ArgMatches) {
-    if let Some(subsubmatches) = submatches.subcommand_matches("get") {
-        return get_config_values(subsubmatches);
+    match submatches.subcommand() {
+        ("get", Some(subsubmatches)) => get_config_values(subsubmatches),
+        ("set", Some(subsubmatches)) => set_config_value(subsubmatches),
+        ("replace", Some(subsubmatches)) => replace_config_value(subsubmatches),
+        ("remove", Some(subsubmatches)) => remove_config_value(subsubmatches),
+        _ => println!("{}", submatches.usage())
     }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("set") {
-        return set_config_value(subsubmatches);
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("replace") {
-        return replace_config_value(subsubmatches);
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("remove") {
-        return remove_config_value(subsubmatches);
-    }
-
-    println!("{}", submatches.usage())
 }
 
 /// Returns one or more config property values
@@ -135,7 +126,7 @@ fn set_config_value(submatches: &ArgMatches) {
             eprintln!("{}", e);
             exit(1);
         }
-        let encryption_res = encrypt::aes_128_ecb_encrypt(&encryption_key_res.unwrap(), &value);
+        let encryption_res = encrypted::aes_128_ecb_encrypt(&encryption_key_res.unwrap(), &value);
         if let Err(e) = encryption_res {
             eprintln!("{}", e);
             exit(1);
@@ -212,7 +203,7 @@ fn decrypt_hashmap(map: &mut HashMap<String, Option<String>>, encryption_key: &s
     for (key, value_opt) in map.iter() {
         if value_opt.is_some() {
             let value = value_opt.clone().unwrap();
-            let decryption_res = encrypt::aes_128_ecb_decrypt(encryption_key, &value);
+            let decryption_res = encrypted::aes_128_ecb_decrypt(encryption_key, &value);
             if let Ok(decrypted_string) = decryption_res {
                 mutations.insert(key.clone(), decrypted_string);
             }

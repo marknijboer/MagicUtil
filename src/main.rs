@@ -8,45 +8,20 @@ mod cli;
 mod open;
 mod info;
 mod utils;
-mod encrypt;
 mod bcrypt;
 
 fn main() {
     // System subcommand
     let matches = cli::match_cli_arguments();
-    if let Some(submatches) = matches.subcommand_matches("system") {
-        return system::handle_system_command(submatches);
-    }
 
-    // Config subcommand
-    if let Some(submatches) = matches.subcommand_matches("config") {
-        return config::handle_config_command(submatches);
+    match matches.subcommand() {
+        ("system", Some(submatches)) => system::handle_system_command(submatches),
+        ("config", Some(submatches)) => config::handle_config_command(submatches),
+        ("open", Some(submatches)) => open::handle_open_command(submatches),
+        ("tail", Some(submatches)) => open::handle_tail_command(submatches),
+        ("info", Some(submatches)) => info::handle_info_command(submatches), 
+        ("service", Some(submatches)) => service::handle_service_command(submatches), 
+        ("bcrypt", Some(submatches)) => bcrypt::handle_bcrypt_command(submatches),
+        _ => println!("{}", matches.usage())
     }
-
-    // Open subcommand
-    if let Some(submatches) = matches.subcommand_matches("open") {
-        return open::handle_open_command(submatches);
-    }
-
-    // Tail subcommand
-    if let Some(submatches) = matches.subcommand_matches("tail") {
-        return open::handle_tail_command(submatches);
-    }
-
-    // Info subcommand
-    if let Some(submatches) = matches.subcommand_matches("info") {
-        return info::handle_info_command(submatches);
-    }
-
-    // Service subcommand
-    if let Some(submatches) = matches.subcommand_matches("service") {
-        return service::handle_service_command(submatches);
-    }
-
-    // Bcrypt subcommand
-    if let Some(submatches) = matches.subcommand_matches("bcrypt") {
-        return bcrypt::handle_bcrypt_command(submatches);
-    }
-
-    println!("{}", matches.usage());
 }
