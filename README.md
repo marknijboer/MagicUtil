@@ -5,8 +5,10 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicINFO Util 0.1.7
-Useful utilities on a MagicINFO server
+MagicUtil 0.1.7
+Released under the MIT license.
+
+Useful utilities on a Samsung MagicINFO server for sysadmin tasks.
 
 USAGE:
     magicutil [SUBCOMMAND]
@@ -17,12 +19,12 @@ FLAGS:
 
 SUBCOMMANDS:
     bcrypt     Utilities based on MagicINFO's bcrypt hashing algorithm used to store password
-    config     Utilities based on MagicINFO's main config.properties file
+    config     Get, set, replace or remove properties from MagicINFO's main config.properties file
     help       Prints this message or the help of the given subcommand(s)
     info       Utilities based on retrieving information from the system
     open       Tries to open the given file
     service    Utilities based on the MagicINFO Windows service
-    system     Utilities based on the system itself
+    system     Query system properties used in MagicINFO
     tail       Tries to tail and follow the given file
 ```
 ## Why does it exist?
