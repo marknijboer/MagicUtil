@@ -25,7 +25,10 @@ pub fn handle_config_command(submatches: &ArgMatches) {
         ("set", Some(subsubmatches)) => set_config_value(subsubmatches),
         ("replace", Some(subsubmatches)) => replace_config_value(subsubmatches),
         ("remove", Some(subsubmatches)) => remove_config_value(subsubmatches),
-        _ => println!("{}", submatches.usage())
+        _ => {
+            println!("{}", submatches.usage());
+            exit(2);
+        }
     }
 }
 

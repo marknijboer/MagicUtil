@@ -38,7 +38,10 @@ pub fn handle_service_command(submatches: &ArgMatches) {
     
             println!("{}", output);
         },
-        _ => println!("{}", submatches.usage())
+        _ => {
+            println!("{}", submatches.usage());
+            exit(2);
+        }
     }
 }
 

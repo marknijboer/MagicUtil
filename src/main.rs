@@ -1,3 +1,5 @@
+use std::process::exit;
+
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde;
 
@@ -22,6 +24,9 @@ fn main() {
         ("info", Some(submatches)) => info::handle_info_command(submatches), 
         ("service", Some(submatches)) => service::handle_service_command(submatches), 
         ("bcrypt", Some(submatches)) => bcrypt::handle_bcrypt_command(submatches),
-        _ => println!("{}", matches.usage())
+        _ => {
+            println!("{}", matches.usage());
+            exit(2);
+        }
     }
 }

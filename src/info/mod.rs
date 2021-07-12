@@ -51,7 +51,10 @@ pub fn handle_info_command(submatches: &ArgMatches) {
         
                 print_all_info_as_lines();
         }, 
-        _ => println!("{}", submatches.usage())
+        _ => {
+            println!("{}", submatches.usage());
+            exit(2);
+        }
     }
 }
 

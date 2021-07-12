@@ -9,7 +9,9 @@ pub fn handle_bcrypt_command(submatches: &ArgMatches) {
         hash_plaintext(subsubmatches);
         return;
     }
+    
     println!("{}", submatches.usage());
+    exit(2);
 }
 
 /// Prints the bcrypt hashed version of the plaintext

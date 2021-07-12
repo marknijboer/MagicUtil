@@ -3,24 +3,40 @@ mod prop;
 use std::{collections::HashMap, process::exit};
 use clap::ArgMatches;
 
-use crate::utils::{print_as_json, print_as_lines};
+use crate::utils::{print_as_json};
 
 /// Handles all system related commands.
 pub fn handle_system_command(submatches: &ArgMatches) {
-    let properties: Vec<&str> = submatches.values_of("PROPERTY").unwrap().collect();
-    if properties.is_empty() {
-        eprintln!("Expected one or more property keys");
-        exit(1);
+    match submatches.subcommand() {
+        ("hwunique", Some(subsubmatches)) => {
+            print_system_value("hwunique", subsubmatches.is_present("json"))
+        },
+        ("macaddress", Some(subsubmatches)) => {
+            print_system_value("macaddress", subsubmatches.is_present("json"))
+        },
+        ("boardid", Some(subsubmatches)) => {
+            print_system_value("boardid", subsubmatches.is_present("json"))
+        },
+        ("ipaddress", Some(subsubmatches)) => {
+            print_system_value("ipaddress", subsubmatches.is_present("json"))
+        },
+        _ => {
+            println!("{}", submatches.usage());
+            exit(2);
+        }
     }
+}
 
-    let property_values = get_system_values(&properties);
-    if submatches.is_present("json") {
+// Prints a single system value in the desired form.
+fn print_system_value(key: &str, json: bool) {
+    let property_values = get_system_values(&[key]);
+    if json {
         print_as_json(property_values);
         return;
     }
 
-    print_as_lines(property_values, &properties);
-    return;
+    let value = property_values.get(key).unwrap();
+    println!("{}", value.to_owned().unwrap_or_default());
 }
 
 /// Returns a hashmap containing values for the list of properties given as an
