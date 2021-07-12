@@ -9,45 +9,37 @@ use clap::ArgMatches;
 
 /// Handles all system related commands.
 pub fn handle_service_command(submatches: &ArgMatches) {
-    if let Some(subsubmatches) = submatches.subcommand_matches("status") {
-        print_status(subsubmatches.is_present("json"));
-        return;
+    match submatches.subcommand() {
+        ("status", Some(subsubmatches)) => {
+            print_status(subsubmatches.is_present("json"));
+        },
+        ("start", Some(subsubmatches)) => {
+            start_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
+        },
+        ("stop", Some(subsubmatches)) => {
+            stop_service(subsubmatches.is_present("silent"));
+        },
+        ("restart", Some(subsubmatches)) => {
+            restart_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
+        },
+        ("available", Some(subsubmatches)) => {
+            if subsubmatches.is_present("json") {
+                println!("{}", json!({
+                    "available": service_is_available(),
+                }));
+                return;
+            }
+    
+            let output = if service_is_available() {
+                "Available"
+            } else {
+                "Unavailable"
+            };
+    
+            println!("{}", output);
+        },
+        _ => println!("{}", submatches.usage())
     }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("start") {
-        start_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("stop") {
-        stop_service(subsubmatches.is_present("silent"));
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("restart") {
-        restart_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("available") {
-        if subsubmatches.is_present("json") {
-            println!("{}", json!({
-                "available": service_is_available(),
-            }));
-            return;
-        }
-
-        let output = if service_is_available() {
-            "Available"
-        } else {
-            "Unavailable"
-        };
-
-        println!("{}", output);
-        return;
-    }
-
-    println!("{}", submatches.usage());
 }
 
 /// Simply prints the current status of the MagicINFO service.

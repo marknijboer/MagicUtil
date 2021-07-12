@@ -1,12 +1,13 @@
-use clap::{Arg, App, SubCommand, ArgMatches};
+use clap::{Arg, App, SubCommand, ArgMatches, crate_authors};
 
 /// Matches the CLI arguments and returns an object containing the values.
 pub fn match_cli_arguments() -> ArgMatches<'static> {
-    App::new("MagicINFO Util")
-        .version( env!("CARGO_PKG_VERSION"))
-        .about("Useful utilities on a MagicINFO server")
+    App::new("MagicUtil")
+        .version(env!("CARGO_PKG_VERSION"))
+        .about("Released under the MIT license.\n\nUseful utilities on a Samsung MagicINFO server for sysadmin tasks.")
+        .author(crate_authors!("\n"))
         .subcommand(SubCommand::with_name("system")
-            .about("Utilities based on the system itself")
+            .about("Query system properties used in MagicINFO")
             .arg(Arg::with_name("PROPERTY")
                 .multiple(true)
                 .required(true)
@@ -96,7 +97,7 @@ pub fn match_cli_arguments() -> ArgMatches<'static> {
             )
         )
         .subcommand(SubCommand::with_name("config")
-            .about("Utilities based on MagicINFO's main config.properties file")
+            .about("Get, set, replace or remove properties from MagicINFO's main config.properties file")
             .subcommand(SubCommand::with_name("get")
                 .about("Returns one or more configuration properties")
                 .arg(Arg::with_name("PROPERTY")

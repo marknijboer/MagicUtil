@@ -19,79 +19,66 @@ pub struct AllInfo {
     service: HashMap<String, Option<String>>,
 }
 
-
-/// Handles all system related commands.
+/// Handles all info related commands.
 pub fn handle_info_command(submatches: &ArgMatches) {
-    if let Some(subsubmatches) = submatches.subcommand_matches("database") {
-        if subsubmatches.is_present("json") {
-            print_json(get_database_info);
-            return;
-        }
+    match submatches.subcommand() {
+        ("database", Some(subsubmatches)) => print_config_based_properties(subsubmatches, DATABASE_INFO_ELEMS),
+        ("magicinfo", Some(subsubmatches)) => print_config_based_properties(subsubmatches, MAGICINFO_INFO_ELEMS),
+        ("system", Some(subsubmatches)) => {
+            let system_properties = get_system_values(SYSTEM_INFO_ELEMS);
+            if subsubmatches.is_present("json") {
+                print_as_json(system_properties);
+                return;
+            }
+    
+            print_as_lines_with_context(system_properties, SYSTEM_INFO_ELEMS);
+        },
+        ("service", Some(subsubmatches)) => {
+            let service_properties = get_service_status();
+            if subsubmatches.is_present("json") {
+                print_as_json(service_properties);
+                return
+            }
+            
+            print_as_lines_with_context(service_properties, SERVICE_INFO_ELEMS);
+        },
+        ("all", Some(subsubmatches)) => {
+            let json_output = subsubmatches.is_present("json");
+                if json_output {
+                    print_all_info_as_json();
+                    return;
+                }
         
-        print_lines(get_database_info, DATABASE_INFO_ELEMS);
-        return;
+                print_all_info_as_lines();
+        }, 
+        _ => println!("{}", submatches.usage())
     }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("magicinfo") {
-        if subsubmatches.is_present("json") {
-            print_json(get_magicinfo_info);
-            return;
-        }
-
-        print_lines(get_magicinfo_info, MAGICINFO_INFO_ELEMS);
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("system") {
-        if subsubmatches.is_present("json") {
-            print_json(get_system_info);
-            return;
-        }
-
-        print_lines(get_system_info, SYSTEM_INFO_ELEMS);
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("service") {
-        if subsubmatches.is_present("json") {
-            print_json(get_service_status);
-        }
-        
-        print_lines(get_service_status, SERVICE_INFO_ELEMS);
-        return;
-    }
-
-    if let Some(subsubmatches) = submatches.subcommand_matches("all") {
-        let json_output = subsubmatches.is_present("json");
-        if json_output {
-            print_all_info_as_json();
-            return;
-        }
-
-        print_all_info_as_lines();
-        return;
-    }
-
-    println!("{}", submatches.usage())
 }
 
 /// Prints all information as plain text
 fn print_all_info_as_lines() {
     println!("---- MagicINFO ----");
-    print_lines(get_magicinfo_info, MAGICINFO_INFO_ELEMS);
+    let magicinfo_props = get_config_values(MAGICINFO_INFO_ELEMS);
+    print_as_lines_with_context(magicinfo_props, MAGICINFO_INFO_ELEMS);
+
     println!("---- Database ----");
-    print_lines(get_database_info, DATABASE_INFO_ELEMS);
+    let database_props = get_config_values(DATABASE_INFO_ELEMS);
+    print_as_lines_with_context(database_props, DATABASE_INFO_ELEMS);
+
     println!("---- System ----");
-    print_lines(get_system_info, SYSTEM_INFO_ELEMS);
+    let system_props = get_system_info();
+    print_as_lines_with_context(system_props, SYSTEM_INFO_ELEMS);
+
     println!("---- Service ----");
-    print_lines(get_service_status, SERVICE_INFO_ELEMS);
+    let service_props = get_service_status();
+    print_as_lines_with_context(service_props, SERVICE_INFO_ELEMS);
 }
 
 /// Prints all information as a json object
 fn print_all_info_as_json() {
     let all_info = AllInfo{
-        magicinfo: get_magicinfo_info(),
-        database: get_database_info(),
+        magicinfo: get_config_values(MAGICINFO_INFO_ELEMS),
+        database: get_config_values(DATABASE_INFO_ELEMS),
         service: get_service_status(),
         system: get_system_info(),
     };
@@ -99,20 +86,20 @@ fn print_all_info_as_json() {
     println!("{}", json);
 }
 
-/// Gets MagicINFO related information
-fn get_magicinfo_info() -> HashMap<String, Option<String>> {
-    let properties_res = get_config_properties(MAGICINFO_INFO_ELEMS);
-    if let Err(e) = properties_res {
-        eprintln!("{}", e);
-        exit(1);
+/// Prints all property values to stdout as plain text or as json
+fn print_config_based_properties(subsubmatches: &ArgMatches, properties: &[&str]) {
+    let property_values = get_config_values(properties);
+    if subsubmatches.is_present("json") {
+        print_as_json(property_values);
+        return;
     }
-
-    properties_res.unwrap()
+    
+    print_as_lines_with_context(property_values, properties);
 }
 
-/// Returns information about the database.
-fn get_database_info() -> HashMap<String, Option<String>> {
-    let properties_res = get_config_properties(DATABASE_INFO_ELEMS);
+/// Returns a hashmap containing the property with a resolved value.
+fn get_config_values(properties: &[&str]) -> HashMap<String, Option<String>> {
+    let properties_res = get_config_properties(properties);
     if let Err(e) = properties_res {
         eprintln!("{}", e);
         exit(1);
@@ -124,18 +111,4 @@ fn get_database_info() -> HashMap<String, Option<String>> {
 /// Loads service related information.
 fn get_system_info() -> HashMap<String, Option<String>> {
     get_system_values(SYSTEM_INFO_ELEMS)
-}
-
-/// Executes the callback and prints the returned values as JSON.
-fn print_json<F>(callback: F)
-where F: FnOnce() -> HashMap<String, Option<String>> {
-    let values = callback();
-    print_as_json(values);
-}
-
-/// Executes the callback and prints the returned values as plain text.
-fn print_lines<F>(callback: F, source: &[&str])
-where F: FnOnce() -> HashMap<String, Option<String>> {
-    let values = callback();
-    print_as_lines_with_context(values, source);
 }
