@@ -70,6 +70,7 @@ pub fn get_board_id() -> String {
     str_out.trim().to_owned()
 }
 
+/// Returns the local ip address of this system
 pub fn get_ip_address() -> String {
     let ipaddr_opt = local_ipaddress::get();
     if ipaddr_opt.is_some() {
