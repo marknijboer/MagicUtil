@@ -8,7 +8,7 @@ use crate::service::get_service_status;
 
 const MAGICINFO_INFO_ELEMS: &[&str] = &["wsrm.premiumVersion", "web_url", "CONTENTS_HOME"];
 const DATABASE_INFO_ELEMS: &[&str] = &["wsrm.dbVendor", "wsrm.url", "wsrm.username", "wsrm.password"];
-const SYSTEM_INFO_ELEMS: &[&str] = &["hwunique", "boardid", "macaddress"];
+const SYSTEM_INFO_ELEMS: &[&str] = &["hwunique", "boardid", "macaddress", "ipaddress"];
 const SERVICE_INFO_ELEMS: &[&str] = &["state", "serviceUser", "startMode"];
 
 #[derive(Debug, Serialize)]
@@ -31,7 +31,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
                 return;
             }
     
-            print_as_lines_with_context(system_properties, SYSTEM_INFO_ELEMS);
+            print_as_lines_with_context(system_properties, SYSTEM_INFO_ELEMS, None);
         },
         ("service", Some(subsubmatches)) => {
             let service_properties = get_service_status();
@@ -40,7 +40,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
                 return
             }
             
-            print_as_lines_with_context(service_properties, SERVICE_INFO_ELEMS);
+            print_as_lines_with_context(service_properties, SERVICE_INFO_ELEMS, None);
         },
         ("all", Some(subsubmatches)) => {
             let json_output = subsubmatches.is_present("json");
@@ -60,21 +60,21 @@ pub fn handle_info_command(submatches: &ArgMatches) {
 
 /// Prints all information as plain text
 fn print_all_info_as_lines() {
-    println!("---- MagicINFO ----");
+    println!("MagicINFO:");
     let magicinfo_props = get_config_values(MAGICINFO_INFO_ELEMS);
-    print_as_lines_with_context(magicinfo_props, MAGICINFO_INFO_ELEMS);
+    print_as_lines_with_context(magicinfo_props, MAGICINFO_INFO_ELEMS, Some(20));
 
-    println!("---- Database ----");
+    println!("Database:");
     let database_props = get_config_values(DATABASE_INFO_ELEMS);
-    print_as_lines_with_context(database_props, DATABASE_INFO_ELEMS);
+    print_as_lines_with_context(database_props, DATABASE_INFO_ELEMS, Some(20));
 
-    println!("---- System ----");
+    println!("System:");
     let system_props = get_system_info();
-    print_as_lines_with_context(system_props, SYSTEM_INFO_ELEMS);
+    print_as_lines_with_context(system_props, SYSTEM_INFO_ELEMS, Some(20));
 
-    println!("---- Service ----");
+    println!("Service:");
     let service_props = get_service_status();
-    print_as_lines_with_context(service_props, SERVICE_INFO_ELEMS);
+    print_as_lines_with_context(service_props, SERVICE_INFO_ELEMS, Some(20));
 }
 
 /// Prints all information as a json object
@@ -97,7 +97,7 @@ fn print_config_based_properties(subsubmatches: &ArgMatches, properties: &[&str]
         return;
     }
     
-    print_as_lines_with_context(property_values, properties);
+    print_as_lines_with_context(property_values, properties, None);
 }
 
 /// Returns a hashmap containing the property with a resolved value.

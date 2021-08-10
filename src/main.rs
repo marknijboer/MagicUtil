@@ -13,7 +13,6 @@ mod utils;
 mod bcrypt;
 
 fn main() {
-    // System subcommand
     let matches = cli::match_cli_arguments();
 
     match matches.subcommand() {

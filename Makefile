@@ -1,4 +1,6 @@
-VERSION := $(shell grep version ./Cargo.toml | awk '{print substr($$3, 2, length($$3)-2); exit}')
+# Search for the first line in Cargo.toml that contains 'version' and return its
+# value, stripping the quotes.
+VERSION := $(shell awk '/version/{gsub(/"/, "", $$3); print $$3; exit}' ./Cargo.toml)
 
 windows:
 	cross build --target x86_64-pc-windows-gnu --release
