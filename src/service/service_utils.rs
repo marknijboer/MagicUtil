@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::TcpStream, process::{Command, Stdio, exit}, thread, time};
 
-use crate::utils::print_error;
+use crate::utils::{get_wmic_output_as_list, print_error};
 
 lazy_static! {
     pub static ref ONE_SECOND: time::Duration = time::Duration::from_secs(1);
@@ -74,40 +74,39 @@ pub fn wait_until(state: &str) {
 
 /// Returns the current status of the MagicINFO service
 pub fn get_status() -> String {
-    let mut command = Command::new("powershell");
-    command.args(&["-c", "(Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\").State"]);
+    let mut command = Command::new("wmic");
+    command.args(&["Service", "WHERE", "name='MagicInfoPremium'", "GET", "State"]);
     let output_res = command.output();
     if let Err(e) = output_res {
         print_error(e);
         exit(1);
     }
     
-    let status = output_res.unwrap().stdout;
-    let output = String::from_utf8(status).unwrap();
 
-    return String::from(output.trim());
+    let status_output = output_res.unwrap().stdout;
+    let output_split = get_wmic_output_as_list(status_output);
+
+    output_split[0].clone()
 }
 
 /// Returns information about the service that runs MagicINFO.
 pub fn get_service_status() -> HashMap<String, Option<String>> {
-    let mut command = Command::new("powershell");
-    command.args(&["-c", "$mi = (Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\"); Write-Host $mi.State; Write-Host $mi.StartName; Write-Host $mi.StartMode;"]);
+    let mut command = Command::new("wmic");
+    command.args(&["Service", "WHERE", "name='MagicInfoPremium'", "GET", "State,StartName,StartMode"]);
     
     let mut property_map = HashMap::new();
-    
     let output_res = command.output();
     if output_res.is_err() {
         property_map.insert(String::from("state"), None);
         property_map.insert(String::from("serviceUser"), None);
         property_map.insert(String::from("startMode"), None);
     } else {
-        let start_type = output_res.unwrap().stdout;
-        let output = String::from_utf8(start_type).unwrap();
-        let output_split: Vec<&str> = output.trim().split("\n").collect();
+        let status_output = output_res.unwrap().stdout;
+        let output_split = get_wmic_output_as_list(status_output);
 
-        property_map.insert(String::from("state"), Some(String::from(output_split[0])));
-        property_map.insert(String::from("serviceUser"), Some(String::from(output_split[1])));
-        property_map.insert(String::from("startMode"), Some(String::from(output_split[2])));
+        property_map.insert(String::from("state"), Some(output_split[0].clone()));
+        property_map.insert(String::from("serviceUser"), Some(output_split[1].clone()));
+        property_map.insert(String::from("startMode"), Some(output_split[2].clone()));
     }
 
     property_map
