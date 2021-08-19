@@ -1,7 +1,7 @@
 use std::{collections::HashMap, process::{exit}};
 
 use clap::ArgMatches;
-use crate::{config::get_config_properties, utils::print_as_lines_with_context};
+use crate::{config::get_config_properties, utils::{print_as_lines_with_context, print_error}};
 use crate::system::get_system_values;
 use crate::utils::print_as_json;
 use crate::service::get_service_status;
@@ -104,7 +104,7 @@ fn print_config_based_properties(subsubmatches: &ArgMatches, properties: &[&str]
 fn get_config_values(properties: &[&str]) -> HashMap<String, Option<String>> {
     let properties_res = get_config_properties(properties);
     if let Err(e) = properties_res {
-        eprintln!("{}", e);
+        print_error(e);
         exit(1);
     }
 

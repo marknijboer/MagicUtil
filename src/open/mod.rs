@@ -4,6 +4,7 @@ use crate::config::{
     get_mi_home_dir,
     get_log_directory,
 };
+use crate::utils::print_error;
 use tail::watch_file;
 use clap::ArgMatches;
 use std::{path::PathBuf, process::exit};
@@ -50,7 +51,7 @@ fn handle_command(file: &str, action: LogAction) {
         return act_on_file(action, &path);
     }
 
-    eprintln!("The requested file could not be found.");
+    print_error("The requested file could not be found.");
     exit(1);
 }
 
@@ -166,7 +167,7 @@ fn open_file(file: &str) {
 
     let handle_res = command.spawn();
     if let Err(e) = handle_res {
-        eprintln!("{}", e);
+        print_error(e);
         exit(1);
     }
 
@@ -216,7 +217,7 @@ fn resolve_notepad_pp() -> Option<String> {
 /// Tails the given file and follows the output
 fn tail_file(file: &str) {
     if let Err(e) = watch_file(file) {
-        eprintln!("{}", e);
+        print_error(e);
         exit(1);
     }
 }

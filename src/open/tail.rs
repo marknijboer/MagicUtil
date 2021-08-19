@@ -1,6 +1,8 @@
 use std::{fs::File, io::{self, BufReader}};
 use std::io::{BufRead, Seek, SeekFrom};
 
+use crate::utils::print_error;
+
 
 pub fn watch_file(file: &str) -> Result<(), io::Error> {
     let f = match File::open(file) {
@@ -29,7 +31,7 @@ pub fn watch_file(file: &str) -> Result<(), io::Error> {
                 }
             },
             Err(err) => {
-                eprintln!("{}", err);
+                print_error(err);
             }
         }
     }

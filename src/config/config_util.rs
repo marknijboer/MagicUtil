@@ -1,3 +1,5 @@
+use crate::utils::print_error;
+
 use super::properties::PropertiesMut;
 use simple_error::SimpleError;
 use std::{collections::HashMap, process::exit};
@@ -23,9 +25,8 @@ pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
 /// Returns the MagicINFO home directory.
 pub fn get_mi_home_dir() -> PathBuf {
     let home_path_res = env::var("MAGICINFO_PREMIUM_HOME");
-    if let Err(e) = home_path_res {
-        let error_message = format!("Could not find environment variable `MAGICINFO_PREMIUM_HOME`: {}", e.to_string());
-        eprintln!("{}", error_message);
+    if let Err(_e) = home_path_res {
+        print_error("Could not find environment variable `MAGICINFO_PREMIUM_HOME`");
         exit(1);
     }
 

@@ -3,6 +3,8 @@ use std::process::exit;
 use pwhash::bcrypt::{self, BcryptSetup, BcryptVariant};
 use clap::ArgMatches;
 
+use crate::utils::print_error;
+
 /// Handles all system related commands.
 pub fn handle_bcrypt_command(submatches: &ArgMatches) {
     if let Some(subsubmatches) = submatches.subcommand_matches("hash") {
@@ -18,7 +20,7 @@ pub fn handle_bcrypt_command(submatches: &ArgMatches) {
 fn hash_plaintext(submatches: &ArgMatches) {
     let key = submatches.value_of("PLAINTEXT").unwrap();
     if key.is_empty() {
-        eprintln!("Expected a plaintext to hash");
+        print_error("Expected a plaintext to hash");
         exit(1);
     }
 
@@ -29,7 +31,8 @@ fn hash_plaintext(submatches: &ArgMatches) {
     }, key);
 
     if let Err(hash_err) = hash_res {
-        eprintln!("Could not hash plaintext: {:?}", hash_err);
+        let error_message = format!("Could not hash plaintext: {:?}", hash_err);
+        print_error(error_message);
         exit(1);
     }
 

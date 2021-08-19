@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 use pad::PadStr;
 
 
@@ -32,4 +32,8 @@ pub fn print_as_lines_with_context(data: HashMap<String, Option<String>>, proper
         let property_value = data.get(property.to_owned()).unwrap();
         println!("  {} :  {}", property.pad_to_width(longest_property_length), property_value.clone().unwrap_or_default());
     }
+}
+
+pub fn print_error<T: Display>(msg: T) {
+    eprintln!("magicutil: {}", msg);
 }

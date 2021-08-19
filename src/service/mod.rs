@@ -7,6 +7,8 @@ use serde_json::json;
 use service_utils::{ServiceAction, get_status, service_is_available, act_on_service, wait_until, wait_until_available};
 use clap::ArgMatches;
 
+use crate::utils::print_error;
+
 /// Handles all system related commands.
 pub fn handle_service_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
@@ -61,7 +63,7 @@ fn print_status(json_output: bool) {
 fn start_service(await_availability: bool, silent: bool) {
     let status = get_status();
     if status != "Stopped" {
-        eprintln!("The service can only be started if it is currently stopped");
+        print_error("The service can only be started if it is currently stopped");
         exit(1);
     }
 
@@ -82,7 +84,7 @@ fn start_service(await_availability: bool, silent: bool) {
 fn stop_service(silent: bool) {
     let status = get_status();
     if status != "Running" {
-        eprintln!("The service can only be stopped if it is currently running");
+        print_error("The service can only be stopped if it is currently running");
         exit(1);
     }
 
@@ -97,7 +99,7 @@ fn stop_service(silent: bool) {
 fn restart_service(await_availability: bool, silent: bool) {
     let status = get_status();
     if status != "Running" {
-        eprintln!("The service can only be restarted if it is currently running");
+        print_error("The service can only be restarted if it is currently running");
         exit(1);
     }
 

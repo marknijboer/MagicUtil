@@ -1,5 +1,7 @@
 use std::{collections::HashMap, net::TcpStream, process::{Command, Stdio, exit}, thread, time};
 
+use crate::utils::print_error;
+
 lazy_static! {
     pub static ref ONE_SECOND: time::Duration = time::Duration::from_secs(1);
 }
@@ -32,7 +34,7 @@ pub fn act_on_service(action: ServiceAction) {
 
     let handle_res = command.spawn();
     if let Err(e) = handle_res {
-        eprintln!("{}", e);
+        print_error(e);
         exit(1);
     }
 }
@@ -76,7 +78,7 @@ pub fn get_status() -> String {
     command.args(&["-c", "(Get-WmiObject Win32_Service -Filter \"Name='MagicInfoPremium'\").State"]);
     let output_res = command.output();
     if let Err(e) = output_res {
-        eprintln!("{}", e);
+        print_error(e);
         exit(1);
     }
     
