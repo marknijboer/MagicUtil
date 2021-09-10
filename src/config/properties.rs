@@ -33,12 +33,12 @@ impl PropertiesMut {
     /// Adds a mutation with a new value for the current PropertiesMut
     pub fn set(&mut self, key: &str, value: &str) {
         let value_opt = Some(String::from(value));
-        &self.mutations.insert(String::from(key), value_opt);
+        self.mutations.insert(String::from(key), value_opt);
     }
 
     /// Adds a mutations that will remove a certain key from the PropertiesMut
     pub fn remove(&mut self, key: &str) {
-        &self.mutations.insert(String::from(key), None);
+        self.mutations.insert(String::from(key), None);
     }
 
     /// Returns a hashmap containing all values from the config.properties file.
