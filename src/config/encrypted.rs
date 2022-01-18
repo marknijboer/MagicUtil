@@ -45,7 +45,7 @@ pub fn aes_128_ecb_decrypt(key: &str, encrypted_string: &str) -> Result<String, 
     }
 
     let encrypted = base64::decode(encrypted_string).map_err(|e| {
-        let error_message = format!("Could not base64 decode encrypted string: {}", e);
+        let error_message = format!("Could not base64 decode encrypted string: {e}");
         return SimpleError::new(error_message)
     })?;
 
@@ -74,7 +74,7 @@ pub fn aes_128_ecb_decrypt(key: &str, encrypted_string: &str) -> Result<String, 
 
     let decrypted_bytes = pkcs5_unpadding(&decrypted[..]);
     let decrypted_string = String::from_utf8(decrypted_bytes).map_err(|e| {
-        let error_message = format!("Could not parse decrypted value into a string: {}", e);
+        let error_message = format!("Could not parse decrypted value into a string: {e}");
         return SimpleError::new(error_message)
     })?;
 

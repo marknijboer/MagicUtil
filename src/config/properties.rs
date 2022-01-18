@@ -20,7 +20,7 @@ impl PropertiesMut {
     /// should exist.
     pub fn open(path: &str) -> Result<Self, SimpleError> {
         File::open(path).map_err(|e| {
-            let message = format!("Could not load properties file: {}", e);
+            let message = format!("Could not load properties file: {e}");
             SimpleError::new(message)
         })?;
 
@@ -44,7 +44,7 @@ impl PropertiesMut {
     /// Returns a hashmap containing all values from the config.properties file.
     pub fn get_hashmap_content(&self) -> Result<HashMap<String, String>, SimpleError> {
         let file = File::open(&self.source).map_err(|e| {
-            let message = format!("Could not load properties file: {}", e);
+            let message = format!("Could not load properties file: {e}");
             SimpleError::new(message)
         })?;
 
@@ -52,7 +52,7 @@ impl PropertiesMut {
 
         for line_res in BufReader::new(file).lines() {
             let line = line_res.map_err(|e| {
-                let message = format!("Could not load properties file: {}", e);
+                let message = format!("Could not load properties file: {e}");
                 SimpleError::new(message)
             })?;
 
@@ -75,7 +75,7 @@ impl PropertiesMut {
         let mut mutations_clone = self.mutations.clone();
 
         let file = File::open(&self.source).map_err(|e| {
-            let message = format!("Could not load properties file: {}", e);
+            let message = format!("Could not load properties file: {e}");
             SimpleError::new(message)
         })?;
 
@@ -83,7 +83,7 @@ impl PropertiesMut {
         // key-value.
         for line_res in BufReader::new(file).lines() {
             let line = line_res.map_err(|e| {
-                let message = format!("Could not load properties file: {}", e);
+                let message = format!("Could not load properties file: {e}");
                 SimpleError::new(message)
             })?;
 
@@ -96,7 +96,8 @@ impl PropertiesMut {
                     // contain a value that should be the new value of this key.
                     let mutated_value = mutations_clone.get(&key).unwrap().clone();
                     if mutated_value.is_some() {
-                        let new_value = format!("{} = {}{}", key, mutated_value.unwrap(), LINE_ENDING);
+                        let value = mutated_value.unwrap();
+                        let new_value = format!("{key} = {value}{LINE_ENDING}");
                         property_buffer.push_str(&new_value);
                     }
 
@@ -107,7 +108,7 @@ impl PropertiesMut {
 
             // All non-matching lines will be placed back in the file without
             // being changed.
-            let old_value = format!("{}{}", &line, LINE_ENDING);
+            let old_value = format!("{line}{LINE_ENDING}");
             property_buffer.push_str(&old_value);
         }
 
@@ -116,7 +117,9 @@ impl PropertiesMut {
         for extra_properties in mutations_clone {
             let mutated_value = extra_properties.1;
             if mutated_value.is_some() {
-                let new_value = format!("{} = {}{}", extra_properties.0, mutated_value.unwrap(), LINE_ENDING);
+                let key = extra_properties.0;
+                let value = mutated_value.unwrap();
+                let new_value = format!("{key} = {value}{LINE_ENDING}");
                 property_buffer.push_str(&new_value);
             }
 
@@ -137,13 +140,13 @@ impl PropertiesMut {
             .open(&self.source);
 
         if let Err(e) = file_res {
-            let message = format!("Could not write properties file: {}", e);
+            let message = format!("Could not write properties file: {e}");
             return Err(SimpleError::new(message));
         }
 
         let mut file = file_res.unwrap();
         if let Err(e) = file.write_all(content.as_bytes()) {
-            let message = format!("Could not write properties file: {}", e);
+            let message = format!("Could not write properties file: {e}");
             return Err(SimpleError::new(message));
         }
 

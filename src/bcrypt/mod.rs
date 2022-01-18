@@ -12,8 +12,7 @@ pub fn handle_bcrypt_command(submatches: &ArgMatches) {
         return;
     }
     
-    println!("{}", submatches.usage());
-    exit(2);
+    unreachable!("No valid subcommand found")
 }
 
 /// Prints the bcrypt hashed version of the plaintext
@@ -31,7 +30,7 @@ fn hash_plaintext(submatches: &ArgMatches) {
     }, key);
 
     if let Err(hash_err) = hash_res {
-        let error_message = format!("Could not hash plaintext: {:?}", hash_err);
+        let error_message = format!("Could not hash plaintext: {hash_err:?}");
         print_error(error_message);
         exit(1);
     }

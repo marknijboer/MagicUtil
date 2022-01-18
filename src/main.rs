@@ -1,5 +1,3 @@
-use std::process::exit;
-
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde;
 
@@ -16,16 +14,15 @@ fn main() {
     let matches = cli::match_cli_arguments();
 
     match matches.subcommand() {
-        ("system", Some(submatches)) => system::handle_system_command(submatches),
-        ("config", Some(submatches)) => config::handle_config_command(submatches),
-        ("open", Some(submatches)) => open::handle_open_command(submatches),
-        ("tail", Some(submatches)) => open::handle_tail_command(submatches),
-        ("info", Some(submatches)) => info::handle_info_command(submatches), 
-        ("service", Some(submatches)) => service::handle_service_command(submatches), 
-        ("bcrypt", Some(submatches)) => bcrypt::handle_bcrypt_command(submatches),
+        Some(("system", submatches)) => system::handle_system_command(submatches),
+        Some(("config", submatches)) => config::handle_config_command(submatches),
+        Some(("open", submatches)) => open::handle_open_command(submatches),
+        Some(("tail", submatches)) => open::handle_tail_command(submatches),
+        Some(("info", submatches)) => info::handle_info_command(submatches), 
+        Some(("service", submatches)) => service::handle_service_command(submatches), 
+        Some(("bcrypt", submatches)) => bcrypt::handle_bcrypt_command(submatches),
         _ => {
-            println!("{}", matches.usage());
-            exit(2);
+            unreachable!("No valid subcommand found");
         }
     }
 }

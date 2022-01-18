@@ -12,7 +12,7 @@ pub fn get_hwunique() -> String {
     let mac = get_mac_address().replace(":", "").to_uppercase();
     let board_id = get_board_id().replace("-", "").to_uppercase();
     let hash = md5::compute((mac + board_id.as_str()).as_str());
-    let hash_string = format!("{:X}", hash);
+    let hash_string = format!("{hash:X}");
 
     hash_string.chars().take(16).collect::<String>()
 }
@@ -30,7 +30,8 @@ pub fn get_mac_address() -> String {
         return String::from(STANDARD_MAC_ADDRESS);
     }
     
-    let mac_string = format!("{}", mac_opt.unwrap());
+    let mac = mac_opt.unwrap();
+    let mac_string = format!("{mac}");
     mac_string.trim().to_owned()
 }
 

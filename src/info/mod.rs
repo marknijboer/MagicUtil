@@ -1,6 +1,6 @@
 use std::{collections::HashMap, process::{exit}};
 
-use clap::ArgMatches;
+use clap::{ArgMatches};
 use crate::{config::get_config_properties, utils::{print_as_lines_with_context, print_error}};
 use crate::system::get_system_values;
 use crate::utils::print_as_json;
@@ -22,9 +22,9 @@ pub struct AllInfo {
 /// Handles all info related commands.
 pub fn handle_info_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
-        ("database", Some(subsubmatches)) => print_config_based_properties(subsubmatches, DATABASE_INFO_ELEMS),
-        ("magicinfo", Some(subsubmatches)) => print_config_based_properties(subsubmatches, MAGICINFO_INFO_ELEMS),
-        ("system", Some(subsubmatches)) => {
+        Some(("database", subsubmatches)) => print_config_based_properties(subsubmatches, DATABASE_INFO_ELEMS),
+        Some(("magicinfo", subsubmatches)) => print_config_based_properties(subsubmatches, MAGICINFO_INFO_ELEMS),
+        Some(("system", subsubmatches)) => {
             let system_properties = get_system_values(SYSTEM_INFO_ELEMS);
             if subsubmatches.is_present("json") {
                 print_as_json(system_properties);
@@ -33,7 +33,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
     
             print_as_lines_with_context(system_properties, SYSTEM_INFO_ELEMS, None);
         },
-        ("service", Some(subsubmatches)) => {
+        Some(("service", subsubmatches)) => {
             let service_properties = get_service_status();
             if subsubmatches.is_present("json") {
                 print_as_json(service_properties);
@@ -42,7 +42,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
             
             print_as_lines_with_context(service_properties, SERVICE_INFO_ELEMS, None);
         },
-        ("all", Some(subsubmatches)) => {
+        Some(("all", subsubmatches)) => {
             let json_output = subsubmatches.is_present("json");
                 if json_output {
                     print_all_info_as_json();
@@ -52,8 +52,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
                 print_all_info_as_lines();
         }, 
         _ => {
-            println!("{}", submatches.usage());
-            exit(2);
+            unreachable!("No valid subcommand found")
         }
     }
 }

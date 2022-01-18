@@ -21,13 +21,12 @@ const ENCRYPTION_KEY_PROPERTY: &str = "encrypt.manager.key.v1";
 /// requested
 pub fn handle_config_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
-        ("get", Some(subsubmatches)) => get_config_values(subsubmatches),
-        ("set", Some(subsubmatches)) => set_config_value(subsubmatches),
-        ("replace", Some(subsubmatches)) => replace_config_value(subsubmatches),
-        ("remove", Some(subsubmatches)) => remove_config_value(subsubmatches),
+        Some(("get", subsubmatches)) => get_config_values(subsubmatches),
+        Some(("set", subsubmatches)) => set_config_value(subsubmatches),
+        Some(("replace", subsubmatches)) => replace_config_value(subsubmatches),
+        Some(("remove", subsubmatches)) => remove_config_value(subsubmatches),
         _ => {
-            println!("{}", submatches.usage());
-            exit(2);
+            unreachable!("No valid subcommand found")
         }
     }
 }
@@ -85,7 +84,7 @@ fn replace_config_value(submatches: &ArgMatches) {
     let current_property_values = current_property_values_res.unwrap();
     let current_value_opt = current_property_values.get(key).unwrap();
     if current_value_opt.is_none() {
-        let error_message = format!("key {} is currently not set. Cannot execute replace on this key", key);
+        let error_message = format!("key {key} is currently not set. Cannot execute replace on this key");
         print_error(error_message);
         exit(1);
     }

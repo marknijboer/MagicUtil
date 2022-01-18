@@ -134,7 +134,7 @@ fn resolve_file_in_tomcat_logdir(file: &str) -> Option<String> {
 
 /// Tries to resolve the file as a shortcut for the logs in the Tomcat log dir.
 fn find_stdio_log(file: &str, mut home_dir: PathBuf) -> Option<String> {
-    let log_part = format!("magicinfopremium-{}.", file);
+    let log_part = format!("magicinfopremium-{file}.");
 
     home_dir.push("tomcat");
     home_dir.push("logs");

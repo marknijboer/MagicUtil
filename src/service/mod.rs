@@ -12,19 +12,19 @@ use crate::utils::print_error;
 /// Handles all system related commands.
 pub fn handle_service_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
-        ("status", Some(subsubmatches)) => {
+        Some(("status", subsubmatches)) => {
             print_status(subsubmatches.is_present("json"));
         },
-        ("start", Some(subsubmatches)) => {
+        Some(("start", subsubmatches)) => {
             start_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
         },
-        ("stop", Some(subsubmatches)) => {
+        Some(("stop", subsubmatches)) => {
             stop_service(subsubmatches.is_present("silent"));
         },
-        ("restart", Some(subsubmatches)) => {
+        Some(("restart", subsubmatches)) => {
             restart_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
         },
-        ("available", Some(subsubmatches)) => {
+        Some(("available", subsubmatches)) => {
             if subsubmatches.is_present("json") {
                 println!("{}", json!({
                     "available": service_is_available(),
@@ -41,8 +41,7 @@ pub fn handle_service_command(submatches: &ArgMatches) {
             println!("{}", output);
         },
         _ => {
-            println!("{}", submatches.usage());
-            exit(2);
+            unreachable!("No valid subcommand found")
         }
     }
 }

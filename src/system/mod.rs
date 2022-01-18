@@ -1,6 +1,6 @@
 mod prop;
 
-use std::{collections::HashMap, process::exit};
+use std::{collections::HashMap};
 use clap::ArgMatches;
 
 use crate::utils::{print_as_json};
@@ -8,21 +8,20 @@ use crate::utils::{print_as_json};
 /// Handles all system related commands.
 pub fn handle_system_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
-        ("hwunique", Some(subsubmatches)) => {
+        Some(("hwunique", subsubmatches)) => {
             print_system_value("hwunique", subsubmatches.is_present("json"))
         },
-        ("macaddress", Some(subsubmatches)) => {
+        Some(("macaddress", subsubmatches)) => {
             print_system_value("macaddress", subsubmatches.is_present("json"))
         },
-        ("boardid", Some(subsubmatches)) => {
+        Some(("boardid", subsubmatches)) => {
             print_system_value("boardid", subsubmatches.is_present("json"))
         },
-        ("ipaddress", Some(subsubmatches)) => {
+        Some(("ipaddress", subsubmatches)) => {
             print_system_value("ipaddress", subsubmatches.is_present("json"))
         },
         _ => {
-            println!("{}", submatches.usage());
-            exit(2);
+            unreachable!("No valid subcommand found");
         }
     }
 }
