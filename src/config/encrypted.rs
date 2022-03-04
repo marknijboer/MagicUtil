@@ -1,5 +1,5 @@
-use aes::{Aes128, BlockDecrypt};
-use aes::cipher::{BlockEncrypt, NewBlockCipher,
+use aes::Aes128;
+use aes::cipher::{BlockEncrypt, BlockDecrypt, KeyInit,
     generic_array::GenericArray,
 };
 use simple_error::SimpleError;
