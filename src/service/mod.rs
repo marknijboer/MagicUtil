@@ -40,6 +40,19 @@ pub fn handle_service_command(submatches: &ArgMatches) {
     
             println!("{}", output);
         },
+        Some(("wait", subsubmatches)) => {
+            if subsubmatches.is_present("untilrunning") {
+                println!("Waiting until the service is running...");
+                wait_until("Running");
+                println!("Service is running!");
+            }
+
+            if subsubmatches.is_present("untilavailable") {
+                println!("Waiting until the service is available...");
+                wait_until_available();
+                println!("Service is available!");
+            }
+        },
         _ => {
             unreachable!("No valid subcommand found")
         }
@@ -73,7 +86,7 @@ fn start_service(await_availability: bool, silent: bool) {
     print("Service is running!", silent);
 
     if await_availability {
-        print("Waiting for availibility...", silent);
+        print("Waiting for availability...", silent);
         wait_until_available();
         print("Service is available!", silent);
     }
@@ -115,7 +128,7 @@ fn restart_service(await_availability: bool, silent: bool) {
     print("Service is running!", silent);
 
     if await_availability {
-        print("Waiting for availibility...", silent);
+        print("Waiting for availability...", silent);
         wait_until_available();
         print("Service is available!", silent);
     }
