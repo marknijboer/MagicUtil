@@ -2,10 +2,11 @@ mod service_utils;
 
 pub use service_utils::get_service_status;
 
-use std::{process::exit, thread};
+use std::{process::exit, thread, fmt::Display};
 use serde_json::json;
 use service_utils::{ServiceAction, get_status, service_is_available, act_on_service, wait_until, wait_until_available};
 use clap::ArgMatches;
+use colored::*;
 
 use crate::utils::print_error;
 
@@ -41,16 +42,16 @@ pub fn handle_service_command(submatches: &ArgMatches) {
             println!("{}", output);
         },
         Some(("wait", subsubmatches)) => {
-            if subsubmatches.is_present("untilrunning") {
-                println!("Waiting until the service is running...");
+            if subsubmatches.is_present("running") {
+                println!("{}", "Waiting until the service is running...".dimmed());
                 wait_until("Running");
-                println!("Service is running!");
+                println!("{}", "Service is running!".green());
             }
 
-            if subsubmatches.is_present("untilavailable") {
-                println!("Waiting until the service is available...");
+            if subsubmatches.is_present("available") {
+                println!("{}", "Waiting until the service is available...".dimmed());
                 wait_until_available();
-                println!("Service is available!");
+                println!("{}", "Service is available!".green());
             }
         },
         _ => {
@@ -81,14 +82,14 @@ fn start_service(await_availability: bool, silent: bool) {
 
     act_on_service(ServiceAction::Start);
 
-    print("Starting MagicINFO...", silent);
+    print("Starting MagicINFO...".dimmed(), silent);
     wait_until("Running");
-    print("Service is running!", silent);
+    print("Service is running!".green(), silent);
 
     if await_availability {
-        print("Waiting for availability...", silent);
+        print("Waiting for availability...".dimmed(), silent);
         wait_until_available();
-        print("Service is available!", silent);
+        print("Service is available!".green(), silent);
     }
 }
 
@@ -102,9 +103,9 @@ fn stop_service(silent: bool) {
 
     act_on_service(ServiceAction::Stop);
 
-    print("Stopping MagicINFO...", silent);
+    print("Stopping MagicINFO...".dimmed(), silent);
     wait_until("Stopped");
-    print("Service is stopped!", silent);
+    print("Service is stopped!".green(), silent);
 }
 
 /// Restarts the MagicINFO service
@@ -117,7 +118,7 @@ fn restart_service(await_availability: bool, silent: bool) {
 
     act_on_service(ServiceAction::Restart);
 
-    print("Restarting MagicINFO...", silent);
+    print("Restarting MagicINFO...".dimmed(), silent);
 
     // One second delay to allow the system to go from the Running state to the
     // 'Stop Pending' state.
@@ -125,16 +126,16 @@ fn restart_service(await_availability: bool, silent: bool) {
 
 
     wait_until("Running");
-    print("Service is running!", silent);
+    print("Service is running!".green(), silent);
 
     if await_availability {
-        print("Waiting for availability...", silent);
+        print("Waiting for availability...".dimmed(), silent);
         wait_until_available();
-        print("Service is available!", silent);
+        print("Service is available!".green(), silent);
     }
 }
 
-fn print(msg: &str, silent: bool) {
+fn print(msg: impl Display, silent: bool) {
     if !silent {
         println!("{}", msg);
     }
