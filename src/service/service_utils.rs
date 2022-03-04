@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::TcpStream, process::{Command, Stdio, exit}, thread, time};
+use std::{collections::HashMap, net::TcpStream, process::{Command, Stdio, exit}, thread, time, io::{Write, Read}};
 
 use crate::utils::{get_wmic_output_as_list, print_error};
 
@@ -6,6 +6,8 @@ lazy_static! {
     pub static ref ONE_SECOND: time::Duration = time::Duration::from_secs(1);
 }
 
+const REQUEST_BYTES: &[u8] = b"GET /MagicInfo/openapi/auth?cmd=isMagicInfo HTTP/1.0\r\n\r\n";
+const RESPONSE_SUCCESS_BYTES: &[u8] = b"HTTP/1.1 200";
 
 pub enum ServiceAction {
     Start,
@@ -49,10 +51,35 @@ pub fn wait_until_available() {
     }
 }
 
-/// Tests if the service is available by checking if the FTP port is open for
-/// for connections
+/// Tests if the service is available by checking if port 7001 on localhost
+/// at path /MagicInfo/openapi/auth?cmd=isMagicInfo returns a 200 response.
 pub fn service_is_available() -> bool {
-    if TcpStream::connect("127.0.0.1:21").is_err() {
+    let connection_res = TcpStream::connect("127.0.0.1:7001");
+    if let Err(_e) = connection_res {
+        return false;
+    }
+
+    let mut connection = connection_res.unwrap();
+    if let Err(_e) = connection.set_read_timeout(Some(*ONE_SECOND)) {
+        return false;
+    }
+
+    let write_res = connection.write_all(REQUEST_BYTES);
+    if let Err(_e) = write_res {
+        return false;
+    }
+
+    let mut buffer = [0; 128];
+    let read_res = connection.read(&mut buffer);
+    if let Err(_e) = read_res {
+        return false;
+    }
+
+    let read_size = read_res.unwrap();
+    let output = &buffer[..read_size];
+
+    // Checks if the response starts with: HTTP/1.1 200
+    if !output.starts_with(RESPONSE_SUCCESS_BYTES) {
         return false;
     }
 
