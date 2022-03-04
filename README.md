@@ -5,22 +5,23 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicUtil 0.1.7
+MagicUtil 0.1.8
 Released under the MIT license.
 
 Useful utilities on a Samsung MagicINFO server for sysadmin tasks.
 
 USAGE:
-    magicutil [SUBCOMMAND]
+    magicutil <SUBCOMMAND>
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+OPTIONS:
+    -h, --help       Print help information
+    -V, --version    Print version information
 
 SUBCOMMANDS:
     bcrypt     Utilities based on MagicINFO's bcrypt hashing algorithm used to store password
-    config     Get, set, replace or remove properties from MagicINFO's main config.properties file
-    help       Prints this message or the help of the given subcommand(s)
+    config     Get, set, replace or remove properties from MagicINFO's main config.properties
+               file
+    help       Print this message or the help of the given subcommand(s)
     info       Utilities based on retrieving information from the system
     open       Tries to open the given file
     service    Utilities based on the MagicINFO Windows service
@@ -127,6 +128,12 @@ PS C:\> magicutil service available --json | jq
 Restarts the service and additionally wait until the HTTP service is back online:
 ```powershell
 PS C:\> magicutil service restart --available --silent
+```
+
+After some other service (re)started MagicINFO, it can wait until the HTTP
+service is back online:
+```powershell
+PS C:\> magicutil service wait --available
 ```
 
 ## Install this program
