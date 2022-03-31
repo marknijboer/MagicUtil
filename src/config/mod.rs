@@ -14,7 +14,7 @@ use crate::utils::{print_as_json, print_as_lines, print_error};
 
 use self::properties::PropertiesMut;
 
-const LOG_PROPERTY: &str = "log4j.appender.file.File";
+const LOG_PROPERTY: &str = "repeater.log.path";
 const ENCRYPTION_KEY_PROPERTY: &str = "encrypt.manager.key.v1";
 
 /// Returns the configuration values in the order in which the properties are
@@ -187,8 +187,7 @@ pub fn get_log_directory() -> PathBuf {
     }
 
     let log_path = log_path_opt.unwrap();
-    let log_path_buf = PathBuf::from(log_path);
-    PathBuf::from(log_path_buf.parent().unwrap())
+    PathBuf::from(log_path)
 }
 
 /// Returns the PropertiesMut from the MagicINFO's main config.properties file.
