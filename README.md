@@ -138,8 +138,24 @@ PS C:\> magicutil service wait --available
 
 ## Install this program
 
+### Dependencies
+Make sure you have Rust installed, there is a oneliner-installer on their [website](https://www.rust-lang.org/tools/install):
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+To cross-compile to other OS's and architectures we need [cross](https://github.com/cross-rs/cross): 
+```bash
+cargo install cross
+```
+
+Cross depends on Docker to build programs. If you don't have Docker yet, make
+sure to install it. The installation instructions for Docker are different for every
+OS, so they won't be listed here.
+
 ### Compile
 To compile this program yourself execute:
+
 ```bash
 make windows
 ```
