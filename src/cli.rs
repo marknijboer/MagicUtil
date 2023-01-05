@@ -75,7 +75,7 @@ pub fn match_cli_arguments() -> ArgMatches {
                     .long("json")
                 ))
             .subcommand(Command::new("all")
-                .about("Returns all usefull information")
+                .about("Returns all useful information")
                 .arg(Arg::new("json")
                 .action(ArgAction::SetTrue)
                     .help("Setting this value returns the property values as json")
