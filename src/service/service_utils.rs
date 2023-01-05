@@ -131,9 +131,17 @@ pub fn get_service_status() -> HashMap<String, Option<String>> {
         let status_output = output_res.unwrap().stdout;
         let output_split = get_wmic_output_as_list(status_output);
 
-        property_map.insert(String::from("state"), Some(output_split[0].clone()));
-        property_map.insert(String::from("serviceUser"), Some(output_split[1].clone()));
-        property_map.insert(String::from("startMode"), Some(output_split[2].clone()));
+        // If the service doesn't exist, we receive an empty status_output, resulting
+        // in an empty output_split.
+        if output_split.is_empty() {
+            property_map.insert(String::from("state"), None);
+            property_map.insert(String::from("serviceUser"), None);
+            property_map.insert(String::from("startMode"), None);
+        } else {
+            property_map.insert(String::from("state"), Some(output_split[0].clone()));
+            property_map.insert(String::from("serviceUser"), Some(output_split[1].clone()));
+            property_map.insert(String::from("startMode"), Some(output_split[2].clone()));
+        }
     }
 
     property_map

@@ -9,16 +9,16 @@ use crate::utils::{print_as_json};
 pub fn handle_system_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
         Some(("hwunique", subsubmatches)) => {
-            print_system_value("hwunique", subsubmatches.is_present("json"))
+            print_system_value("hwunique", subsubmatches.get_flag("json"))
         },
         Some(("macaddress", subsubmatches)) => {
-            print_system_value("macaddress", subsubmatches.is_present("json"))
+            print_system_value("macaddress", subsubmatches.get_flag("json"))
         },
         Some(("boardid", subsubmatches)) => {
-            print_system_value("boardid", subsubmatches.is_present("json"))
+            print_system_value("boardid", subsubmatches.get_flag("json"))
         },
         Some(("ipaddress", subsubmatches)) => {
-            print_system_value("ipaddress", subsubmatches.is_present("json"))
+            print_system_value("ipaddress", subsubmatches.get_flag("json"))
         },
         _ => {
             unreachable!("No valid subcommand found");
@@ -26,7 +26,7 @@ pub fn handle_system_command(submatches: &ArgMatches) {
     }
 }
 
-// Prints a single system value in the desired form.
+/// Prints a single system value in the desired form.
 fn print_system_value(key: &str, json: bool) {
     let property_values = get_system_values(&[key]);
     if json {

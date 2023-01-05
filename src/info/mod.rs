@@ -26,7 +26,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
         Some(("magicinfo", subsubmatches)) => print_config_based_properties(subsubmatches, MAGICINFO_INFO_ELEMS),
         Some(("system", subsubmatches)) => {
             let system_properties = get_system_values(SYSTEM_INFO_ELEMS);
-            if subsubmatches.is_present("json") {
+            if subsubmatches.get_flag("json") {
                 print_as_json(system_properties);
                 return;
             }
@@ -35,7 +35,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
         },
         Some(("service", subsubmatches)) => {
             let service_properties = get_service_status();
-            if subsubmatches.is_present("json") {
+            if subsubmatches.get_flag("json") {
                 print_as_json(service_properties);
                 return
             }
@@ -43,7 +43,7 @@ pub fn handle_info_command(submatches: &ArgMatches) {
             print_as_lines_with_context(service_properties, SERVICE_INFO_ELEMS, None);
         },
         Some(("all", subsubmatches)) => {
-            let json_output = subsubmatches.is_present("json");
+            let json_output = subsubmatches.get_flag("json");
                 if json_output {
                     print_all_info_as_json();
                     return;
@@ -91,7 +91,7 @@ fn print_all_info_as_json() {
 /// Prints all property values to stdout as plain text or as json
 fn print_config_based_properties(subsubmatches: &ArgMatches, properties: &[&str]) {
     let property_values = get_config_values(properties);
-    if subsubmatches.is_present("json") {
+    if subsubmatches.get_flag("json") {
         print_as_json(property_values);
         return;
     }

@@ -33,20 +33,24 @@ pub fn handle_config_command(submatches: &ArgMatches) {
 
 /// Returns one or more config property values
 fn get_config_values(submatches: &ArgMatches) {
-    let properties: Vec<&str> = submatches.values_of("PROPERTY").unwrap().collect();
+    let properties: Vec<&String> = submatches.get_many("PROPERTY").unwrap().collect();
     if properties.is_empty() {
         print_error("Expected one or more property keys");
         exit(1);
     }
 
-    let property_values_res = config_util::get_config_properties(&properties);
+    let properties_str: Vec<&str> = properties.into_iter().map(|p| {
+        p.as_str()
+    }).collect();
+
+    let property_values_res = config_util::get_config_properties(&properties_str);
     if let Err(e) = property_values_res {
         print_error(e);
         exit(1);
     }
 
     let mut property_values = property_values_res.unwrap();
-    if submatches.is_present("decrypt") {
+    if submatches.get_flag("decrypt") {
         let encryption_key_res = get_encryption_key();
         if let Err(e) = encryption_key_res {
             print_error(e);
@@ -55,20 +59,20 @@ fn get_config_values(submatches: &ArgMatches) {
         }
     }
 
-    if submatches.is_present("json") {
+    if submatches.get_flag("json") {
         print_as_json(property_values);
         return;
     }
 
-    print_as_lines(property_values, &properties);
+    print_as_lines(property_values, &properties_str);
     return;
 }
 
 /// Edits one config property value by doing a search and replace on it.
 fn replace_config_value(submatches: &ArgMatches) {
-    let key = submatches.value_of("KEY").unwrap();
-    let search = submatches.value_of("SEARCH").unwrap();
-    let replace = submatches.value_of("REPLACE").unwrap();
+    let key = submatches.get_one::<String>("KEY").unwrap();
+    let search = submatches.get_one::<String>("SEARCH").unwrap();
+    let replace = submatches.get_one::<String>("REPLACE").unwrap();
 
     if key.is_empty() || search.is_empty() || replace.is_empty() {
         print_error("Expected a key, search and replace argument");
@@ -109,8 +113,8 @@ fn replace_config_value(submatches: &ArgMatches) {
 
 /// Sets one config property value
 fn set_config_value(submatches: &ArgMatches) {
-    let key = submatches.value_of("KEY").unwrap();
-    let mut value = submatches.value_of("VALUE").unwrap().to_owned();
+    let key = submatches.get_one::<String>("KEY").unwrap();
+    let mut value = submatches.get_one::<String>("VALUE").unwrap().to_owned();
 
     if key.is_empty() || value.is_empty() {
         print_error("Expected one key and one value");
@@ -123,7 +127,7 @@ fn set_config_value(submatches: &ArgMatches) {
         exit(1);
     }
 
-    if submatches.is_present("encrypt") {
+    if submatches.get_flag("encrypt") {
         let encryption_key_res = get_encryption_key();
         if let Err(e) = encryption_key_res {
             print_error(e);
@@ -149,7 +153,7 @@ fn set_config_value(submatches: &ArgMatches) {
 
 /// Removes a config property value
 fn remove_config_value(submatches: &ArgMatches) {
-    let key = submatches.value_of("KEY").unwrap();
+    let key = submatches.get_one::<String>("KEY").unwrap();
 
     if key.is_empty() {
         print_error("Expected a key to remove");

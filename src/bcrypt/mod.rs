@@ -17,7 +17,7 @@ pub fn handle_bcrypt_command(submatches: &ArgMatches) {
 
 /// Prints the bcrypt hashed version of the plaintext
 fn hash_plaintext(submatches: &ArgMatches) {
-    let key = submatches.value_of("PLAINTEXT").unwrap();
+    let key: &String = submatches.get_one("PLAINTEXT").unwrap();
     if key.is_empty() {
         print_error("Expected a plaintext to hash");
         exit(1);

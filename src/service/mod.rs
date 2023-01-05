@@ -14,19 +14,19 @@ use crate::utils::print_error;
 pub fn handle_service_command(submatches: &ArgMatches) {
     match submatches.subcommand() {
         Some(("status", subsubmatches)) => {
-            print_status(subsubmatches.is_present("json"));
+            print_status(subsubmatches.get_flag("json"));
         },
         Some(("start", subsubmatches)) => {
-            start_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
+            start_service(subsubmatches.get_flag("available"), subsubmatches.get_flag("silent"));
         },
         Some(("stop", subsubmatches)) => {
-            stop_service(subsubmatches.is_present("silent"));
+            stop_service(subsubmatches.get_flag("silent"));
         },
         Some(("restart", subsubmatches)) => {
-            restart_service(subsubmatches.is_present("available"), subsubmatches.is_present("silent"));
+            restart_service(subsubmatches.get_flag("available"), subsubmatches.get_flag("silent"));
         },
         Some(("available", subsubmatches)) => {
-            if subsubmatches.is_present("json") {
+            if subsubmatches.get_flag("json") {
                 println!("{}", json!({
                     "available": service_is_available(),
                 }));
@@ -42,13 +42,13 @@ pub fn handle_service_command(submatches: &ArgMatches) {
             println!("{}", output);
         },
         Some(("wait", subsubmatches)) => {
-            if subsubmatches.is_present("running") {
+            if subsubmatches.get_flag("running") {
                 println!("{}", "Waiting until the service is running...".dimmed());
                 wait_until("Running");
                 println!("{}", "Service is running!".green());
             }
 
-            if subsubmatches.is_present("available") {
+            if subsubmatches.get_flag("available") {
                 println!("{}", "Waiting until the service is available...".dimmed());
                 wait_until_available();
                 println!("{}", "Service is available!".green());
