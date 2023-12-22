@@ -3,6 +3,7 @@ use aes::cipher::{BlockEncrypt, BlockDecrypt, KeyInit,
     generic_array::GenericArray,
 };
 use simple_error::SimpleError;
+use base64::{Engine as _, engine::general_purpose};
 
 pub fn aes_128_ecb_encrypt(key: &str, value: &str) -> Result<String, simple_error::SimpleError> {
     let size  = 16;
@@ -34,7 +35,7 @@ pub fn aes_128_ecb_encrypt(key: &str, value: &str) -> Result<String, simple_erro
         }
     }
 
-    let encrypted_string = base64::encode(encrypted);
+    let encrypted_string = general_purpose::STANDARD.encode(encrypted);
     Ok(encrypted_string)
 }
 
@@ -44,7 +45,7 @@ pub fn aes_128_ecb_decrypt(key: &str, encrypted_string: &str) -> Result<String, 
         return Err(SimpleError::new("Expected an encryption key of at least 16 bytes"))
     }
 
-    let encrypted = base64::decode(encrypted_string).map_err(|e| {
+    let encrypted = general_purpose::STANDARD.decode(encrypted_string).map_err(|e| {
         let error_message = format!("Could not base64 decode encrypted string: {e}");
         return SimpleError::new(error_message)
     })?;

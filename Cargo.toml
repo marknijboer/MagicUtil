@@ -1,6 +1,6 @@
 [package]
 name = "magicutil"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Mark Nijboer <mark+magicutil@nijboer.email>"]
 edition = "2021"
 
@@ -17,15 +17,16 @@ strip = true
 
 [dependencies]
 md5 = "0.7.0"
-mac_address = "1.1.3"
-simple-error = "0.2.3"
+mac_address = "1.1.4"
+simple-error = "0.3.0"
 local_ipaddress = "0.1.3"
-clap = { version = "4.0.22", features = ["cargo"] }
+clap = { version = "4.4.11", features = ["cargo"] }
 lazy_static = "1.4.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-aes = "0.8.1"
-base64 = "0.20.0"
+aes = "0.8.2"
+base64 = "0.21.5"
 pwhash = "1"
 pad = "0.1.6"
-colored = "2"
+colored = "2.1.0"
+output_vt100 = "0.1.3"

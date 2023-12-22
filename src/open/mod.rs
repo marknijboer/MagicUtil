@@ -84,7 +84,7 @@ fn resolve_file_in_mi_logdir(file: &str) -> Option<String> {
 fn resolve_file_in_mi_confdir(file: &str) -> Option<String> {
     let mut conf_path = get_mi_home_dir();
 
-    let mut file_copy = file.clone();
+    let mut file_copy = file;
     if file_copy == "conf" {
         file_copy = "config.properties";
     }

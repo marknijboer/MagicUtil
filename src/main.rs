@@ -11,6 +11,9 @@ mod utils;
 mod bcrypt;
 
 fn main() {
+    #[cfg(target_os = "windows")]
+    output_vt100::init();
+
     let matches = cli::match_cli_arguments();
 
     match matches.subcommand() {

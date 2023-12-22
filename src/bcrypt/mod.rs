@@ -10,6 +10,9 @@ pub fn handle_bcrypt_command(submatches: &ArgMatches) {
     if let Some(subsubmatches) = submatches.subcommand_matches("hash") {
         hash_plaintext(subsubmatches);
         return;
+    } else if let Some(subsubmatches) = submatches.subcommand_matches("verify") {
+        verify_plaintext(subsubmatches);
+        return;
     }
     
     unreachable!("No valid subcommand found")
@@ -36,4 +39,26 @@ fn hash_plaintext(submatches: &ArgMatches) {
     }
 
     println!("{}", hash_res.unwrap());
+}
+
+/// Prints whether the plaintext is valid for the given ciphertext
+fn verify_plaintext(submatches: &ArgMatches) {
+    let ciphertext: &String = submatches.get_one("CIPHERTEXT").unwrap();
+    if ciphertext.is_empty() {
+        print_error("Expected a ciphertext to verify");
+        exit(1);
+    }
+
+    let plaintext: &String = submatches.get_one("PLAINTEXT").unwrap();
+    if plaintext.is_empty() {
+        print_error("Expected a plaintext to check");
+        exit(1);
+    }
+
+    let password_matches = bcrypt::verify(plaintext, ciphertext);
+    if password_matches {
+        println!("success");
+    } else {
+        println!("fail");
+    }
 }

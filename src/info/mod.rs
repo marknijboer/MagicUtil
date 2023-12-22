@@ -1,6 +1,6 @@
-use std::{collections::HashMap, process::{exit}};
+use std::{collections::HashMap, process::exit};
 
-use clap::{ArgMatches};
+use clap::ArgMatches;
 use crate::{config::get_config_properties, utils::{print_as_lines_with_context, print_error}};
 use crate::system::get_system_values;
 use crate::utils::print_as_json;
