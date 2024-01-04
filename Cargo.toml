@@ -1,6 +1,6 @@
 [package]
 name = "magicutil"
-version = "0.1.10"
+version = "0.1.11"
 authors = ["Mark Nijboer <mark+magicutil@nijboer.email>"]
 edition = "2021"
 
