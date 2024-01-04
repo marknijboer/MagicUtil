@@ -5,7 +5,7 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicUtil 0.1.10
+MagicUtil 0.1.11
 Released under the MIT license.
 
 Useful utilities on a Samsung MagicINFO server for sysadmin tasks.
