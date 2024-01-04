@@ -11,8 +11,8 @@ mod utils;
 mod bcrypt;
 
 fn main() {
-    #[cfg(target_os = "windows")]
-    output_vt100::init();
+    #[cfg(target_os="windows")]
+    let _ = ansi_term::enable_ansi_support();
 
     let matches = cli::match_cli_arguments();
 
