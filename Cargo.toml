@@ -1,6 +1,6 @@
 [package]
 name = "magicutil"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Mark Nijboer <mark+magicutil@nijboer.email>"]
 edition = "2021"
 
@@ -25,8 +25,9 @@ lazy_static = "1.4.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 aes = "0.8.2"
-base64 = "0.21.5"
+base64 = "0.22.0"
 pwhash = "1"
 pad = "0.1.6"
 colored = "2.1.0"
 ansi_term = "0.12.1"
+regex = "1.10.4"

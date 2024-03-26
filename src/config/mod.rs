@@ -25,6 +25,7 @@ pub fn handle_config_command(submatches: &ArgMatches) {
         Some(("set", subsubmatches)) => set_config_value(subsubmatches),
         Some(("replace", subsubmatches)) => replace_config_value(subsubmatches),
         Some(("remove", subsubmatches)) => remove_config_value(subsubmatches),
+        Some(("overlay", subsubmatches)) => overlay_config_values(subsubmatches),
         _ => {
             unreachable!("No valid subcommand found")
         }
@@ -66,6 +67,39 @@ fn get_config_values(submatches: &ArgMatches) {
 
     print_as_lines(property_values, &properties_str);
     return;
+}
+
+/// Reads the properties-file used as base and overlays the properties from the 
+/// overlay properties-file. The resulting configuration file will be printed
+/// to stdout.
+fn overlay_config_values(submatches: &ArgMatches) {
+    let base_config = submatches.get_one::<String>("BASE_CONFIG_INI").unwrap();
+    let overlay_config = submatches.get_one::<String>("OVERLAY_CONFIG_INI").unwrap();
+
+    // Load the base configuration file
+    let base_config_properties_res = PropertiesMut::open(base_config);
+    if base_config_properties_res.is_err() {
+        print_error("Could not read the base properties-file.");
+        exit(1);
+    }
+    let mut base_config_properties = base_config_properties_res.unwrap();
+
+    // Load the overlay configuration file
+    let overlay_config_properties_res = PropertiesMut::open(overlay_config);
+    if overlay_config_properties_res.is_err() {
+        print_error("Could not read the overlay properties-file.");
+        exit(1);
+    }
+
+    // Read the overlay configuration file as hashmap and apply every key-value pair on the base configuration
+    let config_changes = overlay_config_properties_res.unwrap().get_hashmap_content().unwrap();
+    config_changes.iter().for_each(|(config_key, config_value)| {
+        base_config_properties.set(config_key, config_value);
+    });
+
+    // Construct the final configuration file and print it to stdout.
+    let content = base_config_properties.get_mutated_content().unwrap();
+    println!("{}", content);
 }
 
 /// Edits one config property value by doing a search and replace on it.

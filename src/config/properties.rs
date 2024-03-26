@@ -1,8 +1,14 @@
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, BufRead, Write};
-
+use regex::Regex;
 use simple_error::SimpleError;
+
+use crate::utils::print_error;
+
+lazy_static! {
+    pub static ref ENV_REG: Regex = Regex::new(r"^\$\{([a-zA-Z0-9_]+?)\}$").unwrap();
+}
 
 #[cfg(windows)]
 const LINE_ENDING: &'static str = "\r\n";
@@ -32,7 +38,23 @@ impl PropertiesMut {
 
     /// Adds a mutation with a new value for the current PropertiesMut
     pub fn set(&mut self, key: &str, value: &str) {
-        let value_opt = Some(String::from(value));
+        let value_opt;
+
+        // Check if the value is of format '${ENV_VARIABLE}'. If so, we will try
+        // to insert the values from the environment variable.
+        let matches_opt = ENV_REG.captures(value);
+        if let Some(matches) = matches_opt {
+            let env_key = &matches[1];
+            if let Ok(env_val) = std::env::var(env_key) {
+                value_opt = Some(env_val);
+            } else {
+                let error_message = format!("Value for key '{}' could not be inserted from environment variables because environment variable '{}' could not be resolved. An empty string will be used as value.", key, env_key);
+                print_error(error_message);
+                value_opt = Some(String::new());
+            }
+        } else {
+            value_opt = Some(String::from(value));
+        }
         self.mutations.insert(String::from(key), value_opt);
     }
 

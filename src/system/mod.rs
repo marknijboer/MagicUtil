@@ -1,9 +1,9 @@
 mod prop;
 
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use clap::ArgMatches;
 
-use crate::utils::{print_as_json};
+use crate::utils::print_as_json;
 
 /// Handles all system related commands.
 pub fn handle_system_command(submatches: &ArgMatches) {

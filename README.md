@@ -5,7 +5,7 @@ Most of the commands have optional JSON output which can be used in other
 programs.
 
 ```
-MagicUtil 0.1.11
+MagicUtil 0.1.12
 Released under the MIT license.
 
 Useful utilities on a Samsung MagicINFO server for sysadmin tasks.
@@ -83,6 +83,11 @@ PS C:\> magicutil config get wsrm.username wsrm.password --decrypt --json | jq
   "wsrm.username": "postgres",
   "wsrm.password": "password"
 }
+```
+
+### Overlay two configuration files to generate a new configuration file
+```powershell
+PS C:\> magicutil config overlay ./template.properties ./overlay.properties | Out-File -FilePath ./config.properties
 ```
 
 ### Setting certain configuration values
