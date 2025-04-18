@@ -1,4 +1,4 @@
-use clap::{command, crate_authors, Arg, ArgMatches, Command, ArgAction};
+use clap::{command, crate_authors, Arg, ArgAction, ArgMatches, Command};
 
 /// Matches the CLI arguments and returns an object containing the values.
 pub fn match_cli_arguments() -> ArgMatches {
@@ -217,6 +217,17 @@ pub fn match_cli_arguments() -> ArgMatches {
                 .required(true)
                 )
                 .arg(Arg::new("OVERLAY_CONFIG_INI")
+                .num_args(1)
+                .required(true)
+                )
+            )
+            .subcommand(Command::new("diff")
+                .about("Generates a diff-output of config properties that are set or different in the DIFF_CONFIG_INI compared to the BASE_CONFIG_INI")
+                .arg(Arg::new("BASE_CONFIG_INI")
+                .num_args(1)
+                .required(true)
+                )
+                .arg(Arg::new("DIFF_CONFIG_INI")
                 .num_args(1)
                 .required(true)
                 )

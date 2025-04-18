@@ -2,9 +2,9 @@ use crate::utils::print_error;
 
 use super::properties::PropertiesMut;
 use simple_error::SimpleError;
-use std::{collections::HashMap, process::exit};
 use std::env;
 use std::path::PathBuf;
+use std::{collections::HashMap, process::exit};
 
 type ConfigValueMap = HashMap<String, Option<String>>;
 
@@ -15,7 +15,10 @@ pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
     config_properties_path.push("config.properties");
 
     if !config_properties_path.as_path().exists() {
-        let error_message = format!("Could not find the config.properties at: {}", config_properties_path.display());
+        let error_message = format!(
+            "Could not find the config.properties at: {}",
+            config_properties_path.display()
+        );
         return Err(SimpleError::new(error_message));
     }
 
@@ -42,10 +45,12 @@ pub fn get_config_properties(properties: &[&str]) -> Result<ConfigValueMap, Simp
     let config_properties_path = get_config_properties_path()?;
     let config_properties_res = PropertiesMut::open(config_properties_path.to_str().unwrap());
     if config_properties_res.is_err() {
-        return Err(SimpleError::new("Could not read the config.properties file."));
+        return Err(SimpleError::new(
+            "Could not read the config.properties file.",
+        ));
     }
 
-    let config_properties = config_properties_res.unwrap();
+    let mut config_properties = config_properties_res.unwrap();
     let configuration = config_properties.get_hashmap_content().unwrap();
 
     let mut config_map = ConfigValueMap::new();
@@ -61,4 +66,13 @@ pub fn get_config_properties(properties: &[&str]) -> Result<ConfigValueMap, Simp
     }
 
     Ok(config_map)
+}
+
+pub fn get_all_config_properties(
+    config_content: &str,
+) -> Result<HashMap<String, String>, SimpleError> {
+    let mut config_properties = PropertiesMut::load(config_content);
+    let configuration = config_properties.get_hashmap_content().unwrap();
+
+    Ok(configuration)
 }

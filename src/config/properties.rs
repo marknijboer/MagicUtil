@@ -1,8 +1,9 @@
+use regex::Regex;
+use serde_json::json;
+use simple_error::SimpleError;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, BufRead, Write};
-use regex::Regex;
-use simple_error::SimpleError;
+use std::io::{BufRead, BufReader, Cursor, Read, Write};
 
 use crate::utils::print_error;
 
@@ -16,23 +17,29 @@ const LINE_ENDING: &'static str = "\r\n";
 const LINE_ENDING: &'static str = "\n";
 
 pub struct PropertiesMut {
-    source: String,
-    mutations: HashMap<String, Option<String>>,
+    source: Box<dyn Read>,
+    mutations: serde_json::Map<String, serde_json::Value>,
 }
 
 impl PropertiesMut {
+    pub fn load(config_content: &str) -> Self {
+        Self {
+            source: Box::new(Cursor::new(config_content.to_string())),
+            mutations: serde_json::Map::new(),
+        }
+    }
 
     /// Creates an instance of the PropertiesMut with the given file. That file
     /// should exist.
     pub fn open(path: &str) -> Result<Self, SimpleError> {
-        File::open(path).map_err(|e| {
+        let file = File::open(path).map_err(|e| {
             let message = format!("Could not load properties file: {e}");
             SimpleError::new(message)
         })?;
 
         Ok(Self {
-            source: String::from(path),
-            mutations: HashMap::new(),
+            source: Box::new(file),
+            mutations: serde_json::Map::new(),
         })
     }
 
@@ -55,36 +62,28 @@ impl PropertiesMut {
         } else {
             value_opt = Some(String::from(value));
         }
-        self.mutations.insert(String::from(key), value_opt);
+        self.mutations.insert(String::from(key), json!(value_opt));
     }
 
     /// Adds a mutations that will remove a certain key from the PropertiesMut
     pub fn remove(&mut self, key: &str) {
-        self.mutations.insert(String::from(key), None);
+        self.mutations.insert(String::from(key), json!(null));
     }
 
     /// Returns a hashmap containing all values from the config.properties file.
-    pub fn get_hashmap_content(&self) -> Result<HashMap<String, String>, SimpleError> {
-        let file = File::open(&self.source).map_err(|e| {
-            let message = format!("Could not load properties file: {e}");
-            SimpleError::new(message)
-        })?;
-
+    pub fn get_hashmap_content(&mut self) -> Result<HashMap<String, String>, SimpleError> {
         let mut content_map = HashMap::new();
 
-        for line_res in BufReader::new(file).lines() {
-            let line = line_res.map_err(|e| {
-                let message = format!("Could not load properties file: {e}");
-                SimpleError::new(message)
-            })?;
+        let lines: Vec<String> = BufReader::new(&mut self.source)
+            .lines()
+            .collect::<Result<_, _>>()
+            .map_err(|e| SimpleError::new(format!("Could not load properties file: {}", e)))?;
 
-            let key_opt = self.get_key_values(&line);
-            if key_opt.is_none() {
-                continue;
+        // Now process each line with an immutable borrow of self.
+        for line in lines {
+            if let Some((key, value)) = self.get_key_values(&line) {
+                content_map.insert(key, value);
             }
-
-            let (key, value) = key_opt.unwrap();
-            content_map.insert(key, value);
         }
 
         Ok(content_map)
@@ -92,59 +91,45 @@ impl PropertiesMut {
 
     /// Returns the content of the config.properties file with the mutations
     /// applied as a string.
-    pub fn get_mutated_content(&self) -> Result<String, SimpleError> {
+    pub fn get_mutated_content(&mut self) -> Result<String, SimpleError> {
         let mut property_buffer = String::new();
         let mut mutations_clone = self.mutations.clone();
 
-        let file = File::open(&self.source).map_err(|e| {
-            let message = format!("Could not load properties file: {e}");
-            SimpleError::new(message)
-        })?;
+        // Read all lines first, ending the mutable borrow on self.source.
+        let lines: Vec<String> = BufReader::new(&mut self.source)
+            .lines()
+            .collect::<Result<_, _>>()
+            .map_err(|e| SimpleError::new(format!("Could not load properties file: {e}")))?;
 
-        // Read the file line by line and try to interpret it as a properties
-        // key-value.
-        for line_res in BufReader::new(file).lines() {
-            let line = line_res.map_err(|e| {
-                let message = format!("Could not load properties file: {e}");
-                SimpleError::new(message)
-            })?;
-
+        // Now process each line after self.source is no longer borrowed.
+        for line in lines {
             let key_opt = self.get_key(&line);
             if let Some(key) = key_opt {
                 if mutations_clone.contains_key(&key) {
-
-                    // `mutated_value` will be an option. If the key was removed
-                    // with the `remove` method, it will be None. Else it will
-                    // contain a value that should be the new value of this key.
+                    // If a mutated value exists, replace the current property.
                     let mutated_value = mutations_clone.get(&key).unwrap().clone();
-                    if mutated_value.is_some() {
-                        let value = mutated_value.unwrap();
+                    if mutated_value.is_string() {
+                        let value = mutated_value.as_str().unwrap();
                         let new_value = format!("{key} = {value}{LINE_ENDING}");
                         property_buffer.push_str(&new_value);
                     }
-
                     mutations_clone.remove(&key);
                     continue;
                 }
             }
 
-            // All non-matching lines will be placed back in the file without
-            // being changed.
+            // Non-matching lines are added back unchanged.
             let old_value = format!("{line}{LINE_ENDING}");
             property_buffer.push_str(&old_value);
         }
 
-        // All properties that were not resolved by the iterating the values of
-        // the properties file will be added on the bottom of the file.
-        for extra_properties in mutations_clone {
-            let mutated_value = extra_properties.1;
-            if mutated_value.is_some() {
-                let key = extra_properties.0;
-                let value = mutated_value.unwrap();
+        // Append properties not found in the original file.
+        for (key, mutated_value) in mutations_clone {
+            if mutated_value.is_string() {
+                let value = mutated_value.as_str().unwrap();
                 let new_value = format!("{key} = {value}{LINE_ENDING}");
                 property_buffer.push_str(&new_value);
             }
-
         }
 
         Ok(property_buffer)
@@ -152,14 +137,14 @@ impl PropertiesMut {
 
     /// Writes the content of the config.properties file with the mutations
     /// applied to the original config.properties file.
-    pub fn write(&self) -> Result<(), SimpleError> {
+    pub fn write(&mut self, filename: &str) -> Result<(), SimpleError> {
         let content = self.get_mutated_content()?;
 
         let file_res = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(&self.source);
+            .open(filename);
 
         if let Err(e) = file_res {
             let message = format!("Could not write properties file: {e}");
@@ -179,7 +164,8 @@ impl PropertiesMut {
     /// line. Returns an Option containing the key or None if no key was found.
     fn get_key(&self, line: &str) -> Option<String> {
         let trimmed_line = line.trim();
-        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!") {
+        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!")
+        {
             return None;
         }
 
@@ -201,7 +187,8 @@ impl PropertiesMut {
     /// found.
     fn get_key_values(&self, line: &str) -> Option<(String, String)> {
         let trimmed_line = line.trim();
-        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!") {
+        if trimmed_line.is_empty() || trimmed_line.starts_with("#") || trimmed_line.starts_with("!")
+        {
             return None;
         }
 
@@ -216,10 +203,7 @@ impl PropertiesMut {
         }
 
         let key = String::from(splitted_key);
-        let value = splitted_line[1..]
-            .join("=")
-            .trim()
-            .to_owned();
+        let value = splitted_line[1..].join("=").trim().to_owned();
 
         Some((key, value))
     }

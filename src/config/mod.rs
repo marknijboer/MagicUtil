@@ -1,10 +1,10 @@
-mod config_util;
-mod properties;
-mod encrypted;
+pub mod config_util;
+pub mod encrypted;
+pub mod properties;
 
+pub use config_util::get_config_properties;
 pub use config_util::get_config_properties_path;
 pub use config_util::get_mi_home_dir;
-pub use config_util::get_config_properties;
 
 use clap::ArgMatches;
 use simple_error::SimpleError;
@@ -26,6 +26,7 @@ pub fn handle_config_command(submatches: &ArgMatches) {
         Some(("replace", subsubmatches)) => replace_config_value(subsubmatches),
         Some(("remove", subsubmatches)) => remove_config_value(subsubmatches),
         Some(("overlay", subsubmatches)) => overlay_config_values(subsubmatches),
+        Some(("diff", subsubmatches)) => diff_config_values(subsubmatches),
         _ => {
             unreachable!("No valid subcommand found")
         }
@@ -40,9 +41,7 @@ fn get_config_values(submatches: &ArgMatches) {
         exit(1);
     }
 
-    let properties_str: Vec<&str> = properties.into_iter().map(|p| {
-        p.as_str()
-    }).collect();
+    let properties_str: Vec<&str> = properties.into_iter().map(|p| p.as_str()).collect();
 
     let property_values_res = config_util::get_config_properties(&properties_str);
     if let Err(e) = property_values_res {
@@ -69,7 +68,7 @@ fn get_config_values(submatches: &ArgMatches) {
     return;
 }
 
-/// Reads the properties-file used as base and overlays the properties from the 
+/// Reads the properties-file used as base and overlays the properties from the
 /// overlay properties-file. The resulting configuration file will be printed
 /// to stdout.
 fn overlay_config_values(submatches: &ArgMatches) {
@@ -92,14 +91,74 @@ fn overlay_config_values(submatches: &ArgMatches) {
     }
 
     // Read the overlay configuration file as hashmap and apply every key-value pair on the base configuration
-    let config_changes = overlay_config_properties_res.unwrap().get_hashmap_content().unwrap();
-    config_changes.iter().for_each(|(config_key, config_value)| {
-        base_config_properties.set(config_key, config_value);
-    });
+    let config_changes = overlay_config_properties_res
+        .unwrap()
+        .get_hashmap_content()
+        .unwrap();
+    config_changes
+        .iter()
+        .for_each(|(config_key, config_value)| {
+            base_config_properties.set(config_key, config_value);
+        });
 
     // Construct the final configuration file and print it to stdout.
     let content = base_config_properties.get_mutated_content().unwrap();
     println!("{}", content);
+}
+
+/// Reads the base and diff properties files and outputs all keys that are present or different in
+/// the diff file compared to the base file. The base configuration overlayed with these outputed properties
+/// should equal the original diff properties file.
+fn diff_config_values(submatches: &ArgMatches) {
+    let base_config = submatches.get_one::<String>("BASE_CONFIG_INI").unwrap();
+    let overlay_config = submatches.get_one::<String>("DIFF_CONFIG_INI").unwrap();
+
+    // Load the base configuration file
+    let base_config_properties_res = PropertiesMut::open(base_config);
+    if base_config_properties_res.is_err() {
+        print_error("Could not read the base properties-file.");
+        exit(1);
+    }
+    let base_config_properties = base_config_properties_res
+        .unwrap()
+        .get_hashmap_content()
+        .unwrap();
+
+    // Load the overlay configuration file
+    let diff_config_properties_res = PropertiesMut::open(overlay_config);
+    if diff_config_properties_res.is_err() {
+        print_error("Could not read the overlay properties-file.");
+        exit(1);
+    }
+
+    // Read the overlay configuration file as hashmap and apply every key-value pair on the base configuration
+    let diff_config_properties = diff_config_properties_res
+        .unwrap()
+        .get_hashmap_content()
+        .unwrap();
+
+    let changes_compared_to_base: HashMap<&str, &str> = diff_config_properties
+        .iter()
+        .filter_map(|(config_key, config_value)| {
+            let base_config_value = base_config_properties.get(config_key.as_str());
+            if base_config_value.is_none() {
+                return Some((config_key.as_str(), config_value.as_str()));
+            }
+
+            if base_config_value.unwrap() != config_value {
+                return Some((config_key.as_str(), config_value.as_str()));
+            }
+
+            None
+        })
+        .collect();
+
+    let mut changes_keys_sorted: Vec<&str> = changes_compared_to_base.keys().cloned().collect();
+    changes_keys_sorted.sort();
+
+    changes_keys_sorted
+        .iter()
+        .for_each(|k| println!("{} = {}", k, changes_compared_to_base.get(k).unwrap()));
 }
 
 /// Edits one config property value by doing a search and replace on it.
@@ -122,7 +181,8 @@ fn replace_config_value(submatches: &ArgMatches) {
     let current_property_values = current_property_values_res.unwrap();
     let current_value_opt = current_property_values.get(key).unwrap();
     if current_value_opt.is_none() {
-        let error_message = format!("key {key} is currently not set. Cannot execute replace on this key");
+        let error_message =
+            format!("key {key} is currently not set. Cannot execute replace on this key");
         print_error(error_message);
         exit(1);
     }
@@ -130,15 +190,23 @@ fn replace_config_value(submatches: &ArgMatches) {
     let current_value = current_value_opt.clone().unwrap();
     let new_value = current_value.replace(search, replace);
 
-    let property_res = get_property_mut();
+    let property_path_res = get_property_path();
+    if let Err(e) = property_path_res {
+        print_error(e);
+        exit(1);
+    }
+    let property_path = property_path_res.unwrap();
+
+    let property_res = PropertiesMut::open(&property_path);
     if let Err(e) = property_res {
         print_error(e);
         exit(1);
     }
 
     let mut property = property_res.unwrap();
+
     property.set(key, &new_value);
-    let property_write_res = property.write();
+    let property_write_res = property.write(&property_path);
     if let Err(e) = property_write_res {
         print_error(e);
         exit(1);
@@ -155,7 +223,13 @@ fn set_config_value(submatches: &ArgMatches) {
         exit(1);
     }
 
-    let property_res = get_property_mut();
+    let property_path_res = get_property_path();
+    if let Err(e) = property_path_res {
+        print_error(e);
+        exit(1);
+    }
+    let property_path = property_path_res.unwrap();
+    let property_res = PropertiesMut::open(&property_path);
     if let Err(e) = property_res {
         print_error(e);
         exit(1);
@@ -178,7 +252,7 @@ fn set_config_value(submatches: &ArgMatches) {
 
     let mut property = property_res.unwrap();
     property.set(key, &value);
-    let property_write_res = property.write();
+    let property_write_res = property.write(&property_path);
     if let Err(e) = property_write_res {
         print_error(e);
         exit(1);
@@ -194,7 +268,14 @@ fn remove_config_value(submatches: &ArgMatches) {
         exit(1);
     }
 
-    let property_res = get_property_mut();
+    let property_path_res = get_property_path();
+    if let Err(e) = property_path_res {
+        print_error(e);
+        exit(1);
+    }
+    let property_path = property_path_res.unwrap();
+
+    let property_res = PropertiesMut::open(&property_path);
     if let Err(e) = property_res {
         print_error(e);
         exit(1);
@@ -202,7 +283,7 @@ fn remove_config_value(submatches: &ArgMatches) {
 
     let mut property = property_res.unwrap();
     property.remove(key);
-    let property_write_res = property.write();
+    let property_write_res = property.write(&property_path);
     if let Err(e) = property_write_res {
         print_error(e);
         exit(1);
@@ -229,12 +310,10 @@ pub fn get_log_directory() -> PathBuf {
 }
 
 /// Returns the PropertiesMut from the MagicINFO's main config.properties file.
-fn get_property_mut() -> Result<PropertiesMut, SimpleError>{
+fn get_property_path() -> Result<String, SimpleError> {
     let config_path = get_config_properties_path()?;
     let config_path_str = config_path.to_str().unwrap();
-    let property_mut = properties::PropertiesMut::open(config_path_str)?;
-
-    Ok(property_mut)
+    Ok(config_path_str.to_string())
 }
 
 // Tries to decrypt all values in the hashmap. If a value fails, it will be skipped.
@@ -261,7 +340,9 @@ fn get_encryption_key() -> Result<String, SimpleError> {
     let encryption_key_opt = config_list.get(ENCRYPTION_KEY_PROPERTY).unwrap().clone();
 
     if encryption_key_opt.is_none() {
-        return Err(SimpleError::new("The encryption key could not be found in the config.properties."));
+        return Err(SimpleError::new(
+            "The encryption key could not be found in the config.properties.",
+        ));
     }
 
     Ok(encryption_key_opt.unwrap())
