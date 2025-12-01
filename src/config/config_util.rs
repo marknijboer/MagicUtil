@@ -3,13 +3,25 @@ use crate::utils::print_error;
 use super::properties::PropertiesMut;
 use simple_error::SimpleError;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{collections::HashMap, process::exit};
 
 type ConfigValueMap = HashMap<String, Option<String>>;
 
 /// Returns the full path to the config.properties file.
 pub fn get_config_properties_path() -> Result<PathBuf, SimpleError> {
+    if let Ok(config_properties_path) = env::var("CONFIG_PROPERTIES_PATH") {
+        if !Path::new(&config_properties_path).exists() {
+            let error_message = format!(
+                "Could not find the config.properties at: {}",
+                config_properties_path
+            );
+            return Err(SimpleError::new(error_message));
+        }
+
+        return Ok(PathBuf::from(config_properties_path));
+    }
+
     let mut config_properties_path = get_mi_home_dir();
     config_properties_path.push("conf");
     config_properties_path.push("config.properties");
